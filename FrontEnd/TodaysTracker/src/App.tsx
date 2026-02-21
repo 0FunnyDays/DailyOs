@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Page, Session, User, DayData } from './types';
 import { useAuth } from './hooks/useAuth';
 import { useAppData } from './hooks/useAppData';
@@ -7,20 +7,27 @@ import { useCurrentDay } from './hooks/useCurrentDay';
 import { applyTheme } from './utils/themeUtils';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { Header } from './components/Header/Header';
+import { Footer } from './components/Footer/Footer';
 import { DayView } from './components/DayView/DayView';
+import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { WorkSettingsPage } from './pages/WorkSettingsPage';
 import { GymSettingsPage } from './pages/GymSettingsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { GymPage } from './pages/GymPage';
 
-// Root component — handles auth guard only
+// Root component — handles auth guard + landing vs login
 function App() {
   const { session, users, register, login, logout, updateAvatar, updatePassword } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
 
   if (!session) {
-    return <LoginPage onRegister={register} onLogin={login} />;
+    if (showLogin) {
+      return <LoginPage onRegister={register} onLogin={login} onBack={() => setShowLogin(false)} />;
+    }
+    return <LandingPage onGetStarted={() => setShowLogin(true)} />;
   }
 
   return (
@@ -66,8 +73,33 @@ function AuthenticatedApp({
   const { gymProgram, gymSessions, updateGymProgram, upsertGymSession } = useGymData(session.userId);
 
   const currentDate = useCurrentDay(settings);
-  const [page, setPage] = useState<Page>('today');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // ── Hash-based page routing ───────────────────────────────────────────────
+  const VALID_PAGES: Page[] = ['today', 'dashboard', 'settings', 'settings-work', 'settings-gym', 'profile', 'gym'];
+
+  function readHashPage(): Page {
+    const hash = window.location.hash.replace('#', '');
+    return VALID_PAGES.includes(hash as Page) ? (hash as Page) : 'today';
+  }
+
+  const [page, setPageState] = useState<Page>(readHashPage);
+
+  const navigate = useCallback((p: Page) => {
+    setPageState(p);
+    window.location.hash = p;
+  }, []);
+
+  // Browser back/forward button support
+  useEffect(() => {
+    const validPages: Page[] = ['today', 'dashboard', 'settings', 'settings-work', 'settings-gym', 'profile', 'gym'];
+    function onHashChange() {
+      const hash = window.location.hash.replace('#', '');
+      setPageState(validPages.includes(hash as Page) ? (hash as Page) : 'today');
+    }
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   // Apply theme whenever it changes
   useEffect(() => {
@@ -85,8 +117,11 @@ function AuthenticatedApp({
   // ── Render main content based on current page ───────────────────────────────
   function renderContent() {
     switch (page) {
+      case 'dashboard':
+        return <DashboardPage days={days} settings={settings} />;
+
       case 'settings':
-        return <SettingsPage onNavigate={setPage} />;
+        return <SettingsPage onNavigate={navigate} />;
 
       case 'settings-work':
         return (
@@ -120,7 +155,7 @@ function AuthenticatedApp({
             gymSessions={gymSessions}
             currentDate={currentDate}
             onUpsertSession={upsertGymSession}
-            onNavigate={setPage}
+            onNavigate={navigate}
           />
         );
 
@@ -147,7 +182,7 @@ function AuthenticatedApp({
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen((o) => !o)}
         currentPage={page}
-        onNavigate={setPage}
+        onNavigate={navigate}
       />
 
       <div className="app-content">
@@ -157,7 +192,7 @@ function AuthenticatedApp({
           avatar={currentUser?.avatar ?? null}
           theme={settings.theme}
           onToggleTheme={() => updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' })}
-          onNavigate={(p) => setPage(p)}
+          onNavigate={(p) => navigate(p)}
           onLogout={onLogout}
         />
 
@@ -166,6 +201,7 @@ function AuthenticatedApp({
             {renderContent()}
           </div>
         </main>
+        <Footer />
       </div>
     </div>
   );

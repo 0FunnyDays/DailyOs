@@ -8,26 +8,46 @@ type GymSettingsPageProps = {
 
 const PROGRAM_LABELS: Record<ProgramType, string> = {
   'push-pull-legs': 'Push / Pull / Legs',
+  'bro-split':      'Bro Split',
   'full-body':      'Full Body',
   'cardio':         'Cardio',
   'custom':         'Custom',
 };
 
+const DEFAULT_DAYS: Record<ProgramType, string[]> = {
+  'push-pull-legs': ['Push', 'Pull', 'Legs'],
+  'bro-split':      ['Chest', 'Back', 'Shoulders', 'Arms', 'Legs'],
+  'full-body':      ['Full Body A', 'Full Body B', 'Full Body C'],
+  'cardio':         ['Cardio A', 'Cardio B', 'Cardio C'],
+  'custom':         ['Day 1', 'Day 2', 'Day 3'],
+};
+
 export function GymSettingsPage({ gymProgram, onUpdateGymProgram }: GymSettingsPageProps) {
 
   function selectProgramType(type: ProgramType) {
+    const dayNames = DEFAULT_DAYS[type];
     if (!gymProgram) {
       onUpdateGymProgram({
         programType: type,
-        daysPerWeek: 3,
-        days: Array.from({ length: 3 }, (_, i) => ({
+        daysPerWeek: dayNames.length,
+        days: dayNames.map((name) => ({
           id: generateId(),
-          name: `Day ${i + 1}`,
+          name,
           exercises: [],
         })),
       });
     } else {
-      onUpdateGymProgram({ ...gymProgram, programType: type });
+      // Switching type: rebuild days with new defaults
+      onUpdateGymProgram({
+        ...gymProgram,
+        programType: type,
+        daysPerWeek: dayNames.length,
+        days: dayNames.map((name) => ({
+          id: generateId(),
+          name,
+          exercises: [],
+        })),
+      });
     }
   }
 

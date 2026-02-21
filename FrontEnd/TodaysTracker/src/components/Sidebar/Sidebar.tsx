@@ -71,8 +71,11 @@ export function Sidebar({ isOpen, onToggle, currentPage, onNavigate }: SidebarPr
             {isOpen && <span className="sidebar__nav-label">Today</span>}
           </button>
 
-          {/* Dashboard — disabled */}
-          <div className="sidebar__nav-item sidebar__nav-item--disabled" title="Coming soon">
+          {/* Dashboard */}
+          <button
+            className={`sidebar__nav-item${currentPage === 'dashboard' ? ' sidebar__nav-item--active' : ''}`}
+            onClick={() => onNavigate('dashboard')}
+          >
             <span className="sidebar__nav-icon">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="20" x2="18" y2="10" />
@@ -82,8 +85,7 @@ export function Sidebar({ isOpen, onToggle, currentPage, onNavigate }: SidebarPr
               </svg>
             </span>
             {isOpen && <span className="sidebar__nav-label">Dashboard</span>}
-            {isOpen && <span className="sidebar__nav-badge">Soon</span>}
-          </div>
+          </button>
 
           {/* Gym */}
           <button

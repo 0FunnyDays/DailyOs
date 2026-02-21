@@ -3,9 +3,10 @@ import { useState, type FormEvent } from 'react';
 type LoginPageProps = {
   onRegister: (username: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   onLogin: (username: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  onBack?: () => void;
 };
 
-export function LoginPage({ onRegister, onLogin }: LoginPageProps) {
+export function LoginPage({ onRegister, onLogin, onBack }: LoginPageProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -43,6 +44,14 @@ export function LoginPage({ onRegister, onLogin }: LoginPageProps) {
   return (
     <div className="login-page">
       <div className="login-card">
+        {onBack && (
+          <button className="btn btn--ghost login-back" onClick={onBack}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
+        )}
         <h1 className="login-title">TodaysTracker</h1>
         <p className="login-subtitle">
           {mode === 'login' ? 'Sign in to continue' : 'Create your account'}

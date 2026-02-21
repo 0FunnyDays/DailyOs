@@ -50,11 +50,11 @@ export type Session = {
   username: string;
 };
 
-export type Page = 'today' | 'settings' | 'settings-work' | 'settings-gym' | 'profile' | 'gym';
+export type Page = 'home' | 'today' | 'dashboard' | 'settings' | 'settings-work' | 'settings-gym' | 'profile' | 'gym';
 
 // ── Gym types ──────────────────────────────────────────────────────────────
 
-export type ProgramType = 'push-pull-legs' | 'full-body' | 'cardio' | 'custom';
+export type ProgramType = 'push-pull-legs' | 'bro-split' | 'full-body' | 'cardio' | 'custom';
 
 export type ExerciseTemplate = {
   id: string;
