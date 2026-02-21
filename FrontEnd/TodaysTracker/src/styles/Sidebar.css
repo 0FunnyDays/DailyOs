@@ -56,8 +56,10 @@
 }
 
 .sidebar__logo-img {
-    height: 44px;
+    height: 110px;
+    max-width: 98%;
     object-fit: contain;
+    margin: 12px 0;
 }
 
 .sidebar__toggle {

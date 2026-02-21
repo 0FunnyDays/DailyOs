@@ -1,6 +1,4 @@
 import type { Page, Session, DayData, AppSettings } from "../types";
-import { calculateDayTotals } from "../utils/payUtils";
-import { calculateHours } from "../utils/dateUtils";
 
 type HomePageProps = {
   session: Session;
@@ -9,56 +7,16 @@ type HomePageProps = {
   onNavigate: (page: Page) => void;
 };
 
-export function HomePage({
-  session,
-  currentDay,
-  settings,
-  onNavigate,
-}: HomePageProps) {
-  const flatDailyPay =
-    settings.workingDaysPerMonth > 0
-      ? settings.monthlyFlatSalary / settings.workingDaysPerMonth
-      : 0;
-
-  const totals = calculateDayTotals(currentDay, flatDailyPay);
-  const totalHours = currentDay.shifts.reduce((sum, s) => {
-    if (s.startTime && s.endTime)
-      return sum + calculateHours(s.startTime, s.endTime);
-    return sum;
-  }, 0);
-
+export function HomePage({ onNavigate }: HomePageProps) {
   return (
     <div className="home">
-      <h1 className="home__greeting">
-        Welcome back, <span className="home__username">{session.username}</span>
-      </h1>
-      <p className="home__date">{currentDay.date}</p>
-
-      {/* Today's quick stats */}
-      <div className="home__stats">
-        <div className="home__stat">
-          <span className="home__stat-value">
-            {Math.round(totalHours * 10) / 10}h
-          </span>
-          <span className="home__stat-label">Hours today</span>
-        </div>
-        <div className="home__stat">
-          <span className="home__stat-value">
-            {settings.currency}
-            {totals.netEarnings.toFixed(2)}
-          </span>
-          <span className="home__stat-label">Net earnings</span>
-        </div>
-        <div className="home__stat">
-          <span className="home__stat-value">{currentDay.shifts.length}</span>
-          <span className="home__stat-label">Shifts</span>
-        </div>
-      </div>
+      <h1 className="home__greeting">Welcome to Momentum</h1>
 
       {/* Quick access cards */}
       <h2 className="home__section-title">Quick access</h2>
       <div className="home__cards">
-        <button className="home__card" onClick={() => onNavigate("today")}>
+        {/* ...existing code for quick access cards... */}
+        <button className="home__card" onClick={() => onNavigate("today")}> 
           <div className="home__card-icon">
             <svg
               width="24"
@@ -92,7 +50,7 @@ export function HomePage({
           </span>
         </button>
 
-        <button className="home__card" onClick={() => onNavigate("dashboard")}>
+        <button className="home__card" onClick={() => onNavigate("dashboard")}> 
           <div className="home__card-icon">
             <svg
               width="24"
@@ -128,7 +86,7 @@ export function HomePage({
           </span>
         </button>
 
-        <button className="home__card" onClick={() => onNavigate("gym")}>
+        <button className="home__card" onClick={() => onNavigate("gym")}> 
           <div className="home__card-icon">
             <svg
               width="24"
@@ -166,7 +124,7 @@ export function HomePage({
           </span>
         </button>
 
-        <button className="home__card" onClick={() => onNavigate("settings")}>
+        <button className="home__card" onClick={() => onNavigate("settings")}> 
           <div className="home__card-icon">
             <svg
               width="24"

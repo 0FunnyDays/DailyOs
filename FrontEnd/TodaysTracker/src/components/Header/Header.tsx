@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { Session } from "../../types";
-import { formatDateDisplay } from "../../utils/dateUtils";
 import { Avatar } from "../Avatar/Avatar";
 
 type HeaderProps = {
@@ -14,7 +13,7 @@ type HeaderProps = {
 };
 
 export function Header({
-  currentDate,
+  // currentDate, // removed
   session,
   avatar,
   theme,
@@ -23,9 +22,6 @@ export function Header({
   onLogout,
 }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const parts = formatDateDisplay(currentDate).split(", ");
-  const weekday = parts[0];
-  const rest = parts.slice(1).join(", ");
 
   function navigate(page: "profile" | "settings") {
     setMenuOpen(false);
@@ -34,10 +30,7 @@ export function Header({
 
   return (
     <header className="header">
-      <div className="header__left">
-        <h1 className="header__date">{weekday}</h1>
-        <p>{rest}</p>
-      </div>
+      <div className="header__left">{/* Date removed */}</div>
       <div className="header__right">
         {/* Theme toggle */}
         <button
