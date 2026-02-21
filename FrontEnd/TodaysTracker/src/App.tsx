@@ -1,31 +1,46 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { Page, Session, User, DayData } from './types';
-import { useAuth } from './hooks/useAuth';
-import { useAppData } from './hooks/useAppData';
-import { useGymData } from './hooks/useGymData';
-import { useCurrentDay } from './hooks/useCurrentDay';
-import { applyTheme } from './utils/themeUtils';
-import { Sidebar } from './components/Sidebar/Sidebar';
-import { Header } from './components/Header/Header';
-import { Footer } from './components/Footer/Footer';
-import { DayView } from './components/DayView/DayView';
-import { LandingPage } from './pages/LandingPage';
-import { LoginPage } from './pages/LoginPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { SettingsPage } from './pages/SettingsPage';
-import { WorkSettingsPage } from './pages/WorkSettingsPage';
-import { GymSettingsPage } from './pages/GymSettingsPage';
-import { ProfilePage } from './pages/ProfilePage';
-import { GymPage } from './pages/GymPage';
+import { useState, useEffect, useCallback } from "react";
+import type { Page, Session, User, DayData } from "./types";
+import { useAuth } from "./hooks/useAuth";
+import { useAppData } from "./hooks/useAppData";
+import { useGymData } from "./hooks/useGymData";
+import { useCurrentDay } from "./hooks/useCurrentDay";
+import { applyTheme } from "./utils/themeUtils";
+import { Sidebar } from "./components/Sidebar/Sidebar";
+import { Header } from "./components/Header/Header";
+import { Footer } from "./components/Footer/Footer";
+import { DayView } from "./components/DayView/DayView";
+import { LandingPage } from "./pages/LandingPage";
+import { LoginPage } from "./pages/LoginPage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { WorkSettingsPage } from "./pages/WorkSettingsPage";
+import { GymSettingsPage } from "./pages/GymSettingsPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { GymPage } from "./pages/GymPage";
+import { HomePage } from "./pages/HomePage";
 
 // Root component — handles auth guard + landing vs login
 function App() {
-  const { session, users, register, login, logout, updateAvatar, updatePassword } = useAuth();
+  const {
+    session,
+    users,
+    register,
+    login,
+    logout,
+    updateAvatar,
+    updatePassword,
+  } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
 
   if (!session) {
     if (showLogin) {
-      return <LoginPage onRegister={register} onLogin={login} onBack={() => setShowLogin(false)} />;
+      return (
+        <LoginPage
+          onRegister={register}
+          onLogin={login}
+          onBack={() => setShowLogin(false)}
+        />
+      );
     }
     return <LandingPage onGetStarted={() => setShowLogin(true)} />;
   }
@@ -47,7 +62,11 @@ type AuthenticatedAppProps = {
   users: User[];
   onLogout: () => void;
   onUpdateAvatar: (userId: string, base64: string) => void;
-  onUpdatePassword: (userId: string, oldPw: string, newPw: string) => Promise<{ ok: boolean; error?: string }>;
+  onUpdatePassword: (
+    userId: string,
+    oldPw: string,
+    newPw: string,
+  ) => Promise<{ ok: boolean; error?: string }>;
 };
 
 function AuthenticatedApp({
@@ -70,17 +89,27 @@ function AuthenticatedApp({
     updateSettings,
   } = useAppData(session.userId);
 
-  const { gymProgram, gymSessions, updateGymProgram, upsertGymSession } = useGymData(session.userId);
+  const { gymProgram, gymSessions, updateGymProgram, upsertGymSession } =
+    useGymData(session.userId);
 
   const currentDate = useCurrentDay(settings);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // ── Hash-based page routing ───────────────────────────────────────────────
-  const VALID_PAGES: Page[] = ['today', 'dashboard', 'settings', 'settings-work', 'settings-gym', 'profile', 'gym'];
+  const VALID_PAGES: Page[] = [
+    "home",
+    "today",
+    "dashboard",
+    "settings",
+    "settings-work",
+    "settings-gym",
+    "profile",
+    "gym",
+  ];
 
   function readHashPage(): Page {
-    const hash = window.location.hash.replace('#', '');
-    return VALID_PAGES.includes(hash as Page) ? (hash as Page) : 'today';
+    const hash = window.location.hash.replace("#", "");
+    return VALID_PAGES.includes(hash as Page) ? (hash as Page) : "home";
   }
 
   const [page, setPageState] = useState<Page>(readHashPage);
@@ -92,13 +121,22 @@ function AuthenticatedApp({
 
   // Browser back/forward button support
   useEffect(() => {
-    const validPages: Page[] = ['today', 'dashboard', 'settings', 'settings-work', 'settings-gym', 'profile', 'gym'];
+    const validPages: Page[] = [
+      "home",
+      "today",
+      "dashboard",
+      "settings",
+      "settings-work",
+      "settings-gym",
+      "profile",
+      "gym",
+    ];
     function onHashChange() {
-      const hash = window.location.hash.replace('#', '');
-      setPageState(validPages.includes(hash as Page) ? (hash as Page) : 'today');
+      const hash = window.location.hash.replace("#", "");
+      setPageState(validPages.includes(hash as Page) ? (hash as Page) : "home");
     }
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
   // Apply theme whenever it changes
@@ -117,13 +155,22 @@ function AuthenticatedApp({
   // ── Render main content based on current page ───────────────────────────────
   function renderContent() {
     switch (page) {
-      case 'dashboard':
+      case "home":
+        return (
+          <HomePage
+            session={session}
+            currentDay={currentDay}
+            settings={settings}
+            onNavigate={navigate}
+          />
+        );
+      case "dashboard":
         return <DashboardPage days={days} settings={settings} />;
 
-      case 'settings':
+      case "settings":
         return <SettingsPage onNavigate={navigate} />;
 
-      case 'settings-work':
+      case "settings-work":
         return (
           <WorkSettingsPage
             settings={settings}
@@ -131,7 +178,7 @@ function AuthenticatedApp({
           />
         );
 
-      case 'settings-gym':
+      case "settings-gym":
         return (
           <GymSettingsPage
             gymProgram={gymProgram}
@@ -139,7 +186,7 @@ function AuthenticatedApp({
           />
         );
 
-      case 'profile':
+      case "profile":
         return currentUser ? (
           <ProfilePage
             user={currentUser}
@@ -148,7 +195,7 @@ function AuthenticatedApp({
           />
         ) : null;
 
-      case 'gym':
+      case "gym":
         return (
           <GymPage
             gymProgram={gymProgram}
@@ -165,10 +212,14 @@ function AuthenticatedApp({
             day={currentDay}
             settings={settings}
             onAddShift={() => addShift(currentDate)}
-            onUpdateShift={(id, updates) => updateShift(currentDate, id, updates)}
+            onUpdateShift={(id, updates) =>
+              updateShift(currentDate, id, updates)
+            }
             onRemoveShift={(id) => removeShift(currentDate, id)}
             onAddExpense={() => addExpense(currentDate)}
-            onUpdateExpense={(id, updates) => updateExpense(currentDate, id, updates)}
+            onUpdateExpense={(id, updates) =>
+              updateExpense(currentDate, id, updates)
+            }
             onRemoveExpense={(id) => removeExpense(currentDate, id)}
             onUpdateNote={(note) => updateDayNote(currentDate, note)}
           />
@@ -191,15 +242,17 @@ function AuthenticatedApp({
           session={session}
           avatar={currentUser?.avatar ?? null}
           theme={settings.theme}
-          onToggleTheme={() => updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' })}
+          onToggleTheme={() =>
+            updateSettings({
+              theme: settings.theme === "dark" ? "light" : "dark",
+            })
+          }
           onNavigate={(p) => navigate(p)}
           onLogout={onLogout}
         />
 
         <main className="main">
-          <div className="main-inner">
-            {renderContent()}
-          </div>
+          <div className="main-inner">{renderContent()}</div>
         </main>
         <Footer />
       </div>
