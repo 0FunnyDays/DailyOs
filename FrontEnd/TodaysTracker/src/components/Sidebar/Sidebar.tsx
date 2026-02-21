@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Page } from "../../types";
-import logoSrc from "../../assets/todays-tracker-logo.png";
+import logoSrc from "../../assets/Momentum.png";
 
 type SidebarProps = {
   isOpen: boolean;
@@ -24,14 +24,7 @@ export function Sidebar({
   const [settingsOpen, setSettingsOpen] = useState(isOnSettingsPage);
 
   useEffect(() => {
-    // Only open when navigating to a settings page
-    if (isOnSettingsPage && !settingsOpen) {
-      setSettingsOpen(true);
-    }
-    // Optionally, close when leaving settings pages
-    if (!isOnSettingsPage && settingsOpen) {
-      setSettingsOpen(false);
-    }
+    setSettingsOpen(isOnSettingsPage);
   }, [isOnSettingsPage]);
 
   function toggleSettings() {

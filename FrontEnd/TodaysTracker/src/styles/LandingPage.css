@@ -1,0 +1,106 @@
+/* Landing page styles for TodaysTracker */
+@import "./colors.css";
+
+.landing {
+    min-height: 100vh;
+    background: var(--clr-bg);
+    color: var(--clr-text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0;
+    position: relative;
+}
+
+.landing__hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0 32px 0;
+    z-index: 1;
+}
+
+.landing__logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    margin-bottom: 16px;
+    z-index: 2;
+}
+
+.landing__title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--clr-accent);
+    z-index: 2;
+}
+
+.landing__subtitle {
+    font-size: 1.1rem;
+    color: var(--clr-text-muted);
+    margin-bottom: 24px;
+    z-index: 2;
+}
+
+.landing__cta {
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 12px 32px;
+    border-radius: 8px;
+    margin-bottom: 32px;
+    z-index: 2;
+}
+
+.landing__features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    padding: 0 0 48px 0;
+    z-index: 1;
+}
+
+.landing__feature {
+    background: var(--clr-surface);
+    border-radius: var(--glass-radius);
+    box-shadow: var(--glass-shadow);
+    padding: 32px 24px;
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    z-index: 1;
+}
+
+.landing__feature-icon {
+    margin-bottom: 8px;
+    color: var(--clr-accent);
+    z-index: 2;
+}
+
+.landing__feature-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--clr-accent);
+    margin-bottom: 4px;
+    z-index: 2;
+}
+
+.landing__feature-desc {
+    font-size: 1rem;
+    color: var(--clr-text-muted);
+    text-align: center;
+    z-index: 2;
+}
+
+.landing footer {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 10;
+}

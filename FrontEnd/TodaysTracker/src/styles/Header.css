@@ -1,0 +1,76 @@
+/* Header styles for TodaysTracker */
+@import "./colors.css";
+
+.header {
+    width: 100%;
+    height: 64px;
+    background: var(--clr-surface);
+    color: var(--clr-text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--clr-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header__left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header__date {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--clr-accent);
+}
+
+.header__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--clr-accent);
+}
+
+.header__right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header__theme-toggle {
+    background: var(--clr-accent-soft);
+    color: var(--clr-accent);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.header__theme-toggle:hover {
+    background: var(--clr-accent);
+    color: var(--clr-bg);
+}
+
+.header__logout {
+    background: var(--clr-red-soft);
+    color: var(--clr-red);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.header__logout:hover {
+    background: var(--clr-red);
+    color: var(--clr-bg);
+}

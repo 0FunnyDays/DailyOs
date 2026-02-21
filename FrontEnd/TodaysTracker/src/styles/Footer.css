@@ -1,0 +1,93 @@
+/* ============================================================
+   FOOTER — Glass / Momentum style
+   ============================================================ */
+
+.footer {
+    width: 100%;
+
+    background: var(--clr-surface);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+
+    border-top: 1px solid var(--clr-border);
+
+    /* subtle lift, not a heavy shadow */
+    box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.18);
+
+    position: relative;
+    z-index: 10;
+}
+
+.footer__inner {
+    /* wider, fits modern layouts */
+    max-width: 1200px;
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 14px 18px;
+
+    gap: 12px;
+}
+
+.footer__copy {
+    font-size: 13px;
+    letter-spacing: 0.01em;
+    color: var(--clr-text-dim);
+}
+
+/* Links */
+.footer__links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer__link {
+    color: var(--clr-text-muted);
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    padding: 8px 10px;
+    border-radius: 12px;
+
+    border: 1px solid transparent;
+
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease,
+        transform 0.12s ease;
+}
+
+.footer__link:hover {
+    background: var(--clr-surface-2);
+    color: var(--clr-text);
+    border-color: var(--clr-border-2);
+    transform: translateY(-1px);
+}
+
+/* Optional: highlight primary link (if you want one to pop) */
+.footer__link--accent {
+    background: var(--clr-accent-soft);
+    color: var(--clr-accent-txt);
+    border-color: color-mix(in srgb, var(--clr-accent) 18%, transparent);
+}
+
+.footer__link--accent:hover {
+    background: color-mix(in srgb, var(--clr-accent-soft) 75%, transparent);
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+    .footer__inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 14px 14px;
+    }
+
+    .footer__links {
+        flex-wrap: wrap;
+    }
+}

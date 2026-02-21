@@ -1,25 +1,33 @@
-import { useState } from 'react';
-import type { Session } from '../../types';
-import { formatDateDisplay } from '../../utils/dateUtils';
-import { Avatar } from '../Avatar/Avatar';
+import { useState } from "react";
+import type { Session } from "../../types";
+import { formatDateDisplay } from "../../utils/dateUtils";
+import { Avatar } from "../Avatar/Avatar";
 
 type HeaderProps = {
   currentDate: string;
   session: Session;
   avatar: string | null;
-  theme: 'dark' | 'light';
+  theme: "dark" | "light";
   onToggleTheme: () => void;
-  onNavigate: (page: 'profile' | 'settings') => void;
+  onNavigate: (page: "profile" | "settings") => void;
   onLogout: () => void;
 };
 
-export function Header({ currentDate, session, avatar, theme, onToggleTheme, onNavigate, onLogout }: HeaderProps) {
+export function Header({
+  currentDate,
+  session,
+  avatar,
+  theme,
+  onToggleTheme,
+  onNavigate,
+  onLogout,
+}: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const parts = formatDateDisplay(currentDate).split(', ');
+  const parts = formatDateDisplay(currentDate).split(", ");
   const weekday = parts[0];
-  const rest = parts.slice(1).join(', ');
+  const rest = parts.slice(1).join(", ");
 
-  function navigate(page: 'profile' | 'settings') {
+  function navigate(page: "profile" | "settings") {
     setMenuOpen(false);
     onNavigate(page);
   }
@@ -31,17 +39,28 @@ export function Header({ currentDate, session, avatar, theme, onToggleTheme, onN
         <p className="page-header__date">{rest}</p>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         {/* Theme toggle */}
         <button
           className="page-header__theme-btn"
           onClick={onToggleTheme}
-          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={
+            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          }
           aria-label="Toggle theme"
         >
-          {theme === 'dark' ? (
+          {theme === "dark" ? (
             /* Sun icon */
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <circle cx="12" cy="12" r="5" />
               <line x1="12" y1="1" x2="12" y2="3" />
               <line x1="12" y1="21" x2="12" y2="23" />
@@ -54,14 +73,23 @@ export function Header({ currentDate, session, avatar, theme, onToggleTheme, onN
             </svg>
           ) : (
             /* Moon icon */
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           )}
         </button>
 
         {/* Avatar + dropdown */}
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: "relative" }}>
           <button
             className="page-header__avatar-btn"
             onClick={() => setMenuOpen((o) => !o)}
@@ -73,15 +101,24 @@ export function Header({ currentDate, session, avatar, theme, onToggleTheme, onN
 
           {menuOpen && (
             <div className="user-menu" onMouseLeave={() => setMenuOpen(false)}>
-              <button className="user-menu__item" onClick={() => navigate('profile')}>
+              <button
+                className="user-menu__item"
+                onClick={() => navigate("profile")}
+              >
                 Profile
               </button>
-              <button className="user-menu__item" onClick={() => navigate('settings')}>
+              <button
+                className="user-menu__item"
+                onClick={() => navigate("settings")}
+              >
                 Settings
               </button>
               <button
                 className="user-menu__item user-menu__item--danger"
-                onClick={() => { setMenuOpen(false); onLogout(); }}
+                onClick={() => {
+                  setMenuOpen(false);
+                  onLogout();
+                }}
               >
                 Logout
               </button>
