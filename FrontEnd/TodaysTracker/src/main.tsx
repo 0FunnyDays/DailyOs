@@ -1,4 +1,6 @@
+import "./index.css";
 import "./styles/colors.css";
+import "./styles/HomePage.css";
 import "./styles/Header.css";
 import "./styles/PageRenderer.css";
 import "./styles/LandingPage.css";

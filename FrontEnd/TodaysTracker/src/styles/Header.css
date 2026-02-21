@@ -12,7 +12,7 @@
     padding: 0 24px;
     border-bottom: 1px solid var(--clr-border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    position: sticky;
+    position: relative;
     top: 0;
     z-index: 10;
 }

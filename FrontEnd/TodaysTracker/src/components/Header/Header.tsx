@@ -33,16 +33,15 @@ export function Header({
   }
 
   return (
-    <header className="page-header">
-      <div>
-        <h1 className="page-header__weekday">{weekday}</h1>
-        <p className="page-header__date">{rest}</p>
+    <header className="header">
+      <div className="header__left">
+        <h1 className="header__date">{weekday}</h1>
+        <p>{rest}</p>
       </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div className="header__right">
         {/* Theme toggle */}
         <button
-          className="page-header__theme-btn"
+          className="header__theme-toggle"
           onClick={onToggleTheme}
           title={
             theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
@@ -87,18 +86,16 @@ export function Header({
             </svg>
           )}
         </button>
-
         {/* Avatar + dropdown */}
         <div style={{ position: "relative" }}>
           <button
-            className="page-header__avatar-btn"
+            className="header__avatar"
             onClick={() => setMenuOpen((o) => !o)}
             aria-haspopup="true"
             aria-expanded={menuOpen}
           >
             <Avatar username={session.username} avatar={avatar} size="sm" />
           </button>
-
           {menuOpen && (
             <div className="user-menu" onMouseLeave={() => setMenuOpen(false)}>
               <button
