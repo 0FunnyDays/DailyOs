@@ -2,6 +2,7 @@ import type { DayData, AppSettings, Shift, Expense } from '../../types';
 import { ShiftSection } from '../ShiftSection/ShiftSection';
 import { ExpenseSection } from '../ExpenseSection/ExpenseSection';
 import { DaySummary } from '../DaySummary/DaySummary';
+import { DayNote } from '../DayNote/DayNote';
 
 type DayViewProps = {
   day: DayData;
@@ -12,6 +13,7 @@ type DayViewProps = {
   onAddExpense: () => void;
   onUpdateExpense: (expenseId: string, updates: Partial<Expense>) => void;
   onRemoveExpense: (expenseId: string) => void;
+  onUpdateNote: (note: string) => void;
 };
 
 export function DayView({
@@ -23,6 +25,7 @@ export function DayView({
   onAddExpense,
   onUpdateExpense,
   onRemoveExpense,
+  onUpdateNote,
 }: DayViewProps) {
   const flatDailyPay = settings.workingDaysPerMonth > 0
     ? settings.monthlyFlatSalary / settings.workingDaysPerMonth
@@ -48,6 +51,10 @@ export function DayView({
         onUpdate={onUpdateExpense}
         onRemove={onRemoveExpense}
       />
+
+      <div className="day-view__divider" />
+
+      <DayNote note={day.note ?? ''} onUpdate={onUpdateNote} />
 
       <div className="day-view__divider" />
 

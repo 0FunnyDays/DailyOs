@@ -3,6 +3,10 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
+if (import.meta.env.DEV) {
+  import('./dev/seed').then(({ seedTestUser }) => seedTestUser());
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

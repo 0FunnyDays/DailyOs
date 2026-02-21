@@ -7,6 +7,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   currency: '€',
   monthlyFlatSalary: 0,
   workingDaysPerMonth: 22,
+  theme: 'dark',
 };
 
 const DEFAULT_SHIFT: Omit<Shift, 'id'> = {
@@ -22,13 +23,13 @@ const DEFAULT_EXPENSE: Omit<Expense, 'id'> = {
   description: '',
 };
 
-export function useAppData() {
+export function useAppData(userId: string) {
   const [days, setDays] = useLocalStorage<Record<string, DayData>>(
-    'todaystracker_days',
+    `todaystracker_days_${userId}`,
     {}
   );
   const [settings, setSettings] = useLocalStorage<AppSettings>(
-    'todaystracker_settings',
+    `todaystracker_settings_${userId}`,
     DEFAULT_SETTINGS
   );
 
@@ -96,6 +97,11 @@ export function useAppData() {
     });
   }
 
+  function updateDayNote(date: string, note: string) {
+    const day = getOrCreateDay(date);
+    setDays({ ...days, [date]: { ...day, note } });
+  }
+
   function updateSettings(updates: Partial<AppSettings>) {
     setSettings({ ...settings, ...updates });
   }
@@ -110,6 +116,7 @@ export function useAppData() {
     addExpense,
     updateExpense,
     removeExpense,
+    updateDayNote,
     updateSettings,
   };
 }

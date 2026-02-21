@@ -1,40 +1,42 @@
-import type { DayData, AppSettings } from '../../types';
-import { calculateDayTotals } from '../../utils/payUtils';
-import { calculateHours } from '../../utils/dateUtils';
+import { useState, useEffect } from 'react';
+import type { Page } from '../../types';
+import logoSrc from '../../assets/todays-tracker-logo.png';
 
 type SidebarProps = {
   isOpen: boolean;
   onToggle: () => void;
-  currentDay: DayData;
-  settings: AppSettings;
-  onUpdateSettings: (updates: Partial<AppSettings>) => void;
+  currentPage: Page;
+  onNavigate: (page: Page) => void;
 };
 
-function formatHours(totalHours: number): string {
-  const h = Math.floor(totalHours);
-  const m = Math.round((totalHours - h) * 60);
-  if (h === 0) return `${m}m`;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
-}
+const SETTINGS_PAGES: Page[] = ['settings', 'settings-work', 'settings-gym'];
 
-export function Sidebar({ isOpen, onToggle, currentDay, settings, onUpdateSettings }: SidebarProps) {
-  const flatDailyPay = settings.workingDaysPerMonth > 0
-    ? settings.monthlyFlatSalary / settings.workingDaysPerMonth
-    : 0;
-
-  const totals = calculateDayTotals(currentDay, flatDailyPay);
-  const totalHours = currentDay.shifts
-    .filter((s) => s.startTime && s.endTime)
-    .reduce((sum, s) => sum + calculateHours(s.startTime, s.endTime), 0);
-
+export function Sidebar({ isOpen, onToggle, currentPage, onNavigate }: SidebarProps) {
   const collapsed = !isOpen;
+  const isOnSettingsPage = SETTINGS_PAGES.includes(currentPage);
+
+  // Auto-open accordion when a settings sub-page is active
+  const [settingsOpen, setSettingsOpen] = useState(isOnSettingsPage);
+
+  useEffect(() => {
+    if (isOnSettingsPage) setSettingsOpen(true);
+  }, [isOnSettingsPage]);
+
+  function toggleSettings() {
+    if (!isOpen) {
+      // If sidebar is collapsed, expand it first then open settings
+      onToggle();
+      setSettingsOpen(true);
+      return;
+    }
+    setSettingsOpen((o) => !o);
+  }
 
   return (
     <aside className={`sidebar${collapsed ? ' sidebar--collapsed' : ''}`}>
       {/* Header */}
       <div className="sidebar__header">
-        {isOpen && <span className="sidebar__logo">TodaysTracker</span>}
+        {isOpen && <img src={logoSrc} alt="TodaysTracker" className="sidebar__logo-img" />}
         <button className="sidebar__toggle" onClick={onToggle} title={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}>
           {isOpen ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -52,7 +54,12 @@ export function Sidebar({ isOpen, onToggle, currentDay, settings, onUpdateSettin
       <div className="sidebar__body">
         {/* Navigation */}
         <nav className="sidebar__nav">
-          <div className="sidebar__nav-item sidebar__nav-item--active">
+
+          {/* Today */}
+          <button
+            className={`sidebar__nav-item${currentPage === 'today' ? ' sidebar__nav-item--active' : ''}`}
+            onClick={() => onNavigate('today')}
+          >
             <span className="sidebar__nav-icon">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -62,8 +69,9 @@ export function Sidebar({ isOpen, onToggle, currentDay, settings, onUpdateSettin
               </svg>
             </span>
             {isOpen && <span className="sidebar__nav-label">Today</span>}
-          </div>
+          </button>
 
+          {/* Dashboard — disabled */}
           <div className="sidebar__nav-item sidebar__nav-item--disabled" title="Coming soon">
             <span className="sidebar__nav-icon">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -76,120 +84,83 @@ export function Sidebar({ isOpen, onToggle, currentDay, settings, onUpdateSettin
             {isOpen && <span className="sidebar__nav-label">Dashboard</span>}
             {isOpen && <span className="sidebar__nav-badge">Soon</span>}
           </div>
+
+          {/* Gym */}
+          <button
+            className={`sidebar__nav-item${currentPage === 'gym' ? ' sidebar__nav-item--active' : ''}`}
+            onClick={() => onNavigate('gym')}
+          >
+            <span className="sidebar__nav-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6.5 6.5h11" />
+                <path d="M6.5 17.5h11" />
+                <path d="M3 9.5v5" />
+                <path d="M21 9.5v5" />
+                <path d="M1 11v2" />
+                <path d="M23 11v2" />
+              </svg>
+            </span>
+            {isOpen && <span className="sidebar__nav-label">Gym</span>}
+          </button>
+
+          {/* Settings — accordion */}
+          <button
+            className={`sidebar__nav-item${isOnSettingsPage ? ' sidebar__nav-item--active' : ''}`}
+            onClick={toggleSettings}
+          >
+            <span className="sidebar__nav-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+            </span>
+            {isOpen && <span className="sidebar__nav-label">Settings</span>}
+            {isOpen && (
+              <span className="sidebar__nav-chevron" style={{ marginLeft: 'auto', transition: 'transform 0.2s', transform: settingsOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </span>
+            )}
+          </button>
+
+          {/* Settings sub-items */}
+          {isOpen && settingsOpen && (
+            <div className="sidebar__nav-sub">
+              <button
+                className={`sidebar__nav-sub-item${currentPage === 'settings-work' ? ' sidebar__nav-sub-item--active' : ''}`}
+                onClick={() => onNavigate('settings-work')}
+              >
+                <span className="sidebar__nav-icon" style={{ opacity: 0.6 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                  </svg>
+                </span>
+                <span className="sidebar__nav-label">Work</span>
+              </button>
+
+              <button
+                className={`sidebar__nav-sub-item${currentPage === 'settings-gym' ? ' sidebar__nav-sub-item--active' : ''}`}
+                onClick={() => onNavigate('settings-gym')}
+              >
+                <span className="sidebar__nav-icon" style={{ opacity: 0.6 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6.5 6.5h11" />
+                    <path d="M6.5 17.5h11" />
+                    <path d="M3 9.5v5" />
+                    <path d="M21 9.5v5" />
+                    <path d="M1 11v2" />
+                    <path d="M23 11v2" />
+                  </svg>
+                </span>
+                <span className="sidebar__nav-label">Gym</span>
+              </button>
+            </div>
+          )}
+
         </nav>
 
-        {/* Stats — only when expanded */}
-        {isOpen && (
-          <>
-            <div className="sidebar__divider" />
-            <div className="sidebar__section">
-              <p className="sidebar__section-title">Today</p>
-              <div className="sidebar__stats">
-                <div className="sidebar__stat-row">
-                  <span className="sidebar__stat-label">Hours worked</span>
-                  <span className="sidebar__stat-value">
-                    {totalHours > 0 ? formatHours(totalHours) : '—'}
-                  </span>
-                </div>
-                <div className="sidebar__stat-row">
-                  <span className="sidebar__stat-label">Earnings</span>
-                  <span className="sidebar__stat-value sidebar__stat-value--green">
-                    {settings.currency}{(totals.grossPay + totals.totalTips).toFixed(2)}
-                  </span>
-                </div>
-                <div className="sidebar__stat-row">
-                  <span className="sidebar__stat-label">Expenses</span>
-                  <span className="sidebar__stat-value sidebar__stat-value--red">
-                    {settings.currency}{totals.totalExpenses.toFixed(2)}
-                  </span>
-                </div>
-                <div className="sidebar__stat-row">
-                  <span className="sidebar__stat-label">Net</span>
-                  <span className={`sidebar__stat-value${totals.netEarnings >= 0 ? ' sidebar__stat-value--green' : ' sidebar__stat-value--red'}`}>
-                    {settings.currency}{totals.netEarnings.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Settings — only when expanded */}
-        {isOpen && (
-          <>
-            <div className="sidebar__divider" />
-            <div className="sidebar__section">
-              <p className="sidebar__section-title">Settings</p>
-              <div className="sidebar__settings">
-
-                <label className="sidebar__setting">
-                  <span className="sidebar__setting-label">Monthly salary (flat)</span>
-                  <input
-                    type="number"
-                    min={0}
-                    step={10}
-                    value={settings.monthlyFlatSalary}
-                    onChange={(e) => onUpdateSettings({ monthlyFlatSalary: parseFloat(e.target.value) || 0 })}
-                    className="sidebar__input sidebar__input--medium"
-                  />
-                  {settings.monthlyFlatSalary > 0 && (
-                    <span className="sidebar__setting-desc">
-                      Daily: {settings.currency}{flatDailyPay.toFixed(2)} ({settings.workingDaysPerMonth} days/mo)
-                    </span>
-                  )}
-                </label>
-
-                <label className="sidebar__setting">
-                  <span className="sidebar__setting-label">Working days / month</span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={31}
-                    value={settings.workingDaysPerMonth}
-                    onChange={(e) => {
-                      const val = Math.min(31, Math.max(1, parseInt(e.target.value) || 1));
-                      onUpdateSettings({ workingDaysPerMonth: val });
-                    }}
-                    className="sidebar__input sidebar__input--small"
-                  />
-                </label>
-
-                <label className="sidebar__setting">
-                  <span className="sidebar__setting-label">Day resets at</span>
-                  <div className="sidebar__setting-row">
-                    <input
-                      type="number"
-                      min={0}
-                      max={23}
-                      value={settings.dayResetHour}
-                      onChange={(e) => {
-                        const val = Math.min(23, Math.max(0, parseInt(e.target.value) || 0));
-                        onUpdateSettings({ dayResetHour: val });
-                      }}
-                      className="sidebar__input sidebar__input--small"
-                    />
-                    <span className="sidebar__setting-hint">:00</span>
-                  </div>
-                  <span className="sidebar__setting-desc">
-                    New day starts at this hour (default 4 AM)
-                  </span>
-                </label>
-
-                <label className="sidebar__setting">
-                  <span className="sidebar__setting-label">Currency symbol</span>
-                  <input
-                    type="text"
-                    maxLength={3}
-                    value={settings.currency}
-                    onChange={(e) => onUpdateSettings({ currency: e.target.value || '€' })}
-                    className="sidebar__input sidebar__input--small"
-                  />
-                </label>
-
-              </div>
-            </div>
-          </>
-        )}
       </div>
     </aside>
   );
