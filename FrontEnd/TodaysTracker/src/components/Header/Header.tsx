@@ -18,6 +18,7 @@ const MAIN_NAV_ITEMS: Array<{ page: Page; label: string }> = [
   { page: "today", label: "Work" },
   { page: "dashboard", label: "Dashboard" },
   { page: "projects", label: "Projects" },
+  { page: "travel", label: "Travel" },
   { page: "sleep", label: "Sleep" },
   { page: "gym", label: "Gym" },
 ];

@@ -1,4 +1,4 @@
-import type { AppSettings, DayData, Expense, Project, Shift } from '../types';
+import type { AppSettings, DayData, Expense, Project, Shift, TravelTrip } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '../utils/idUtils';
 
@@ -47,6 +47,10 @@ export function useAppData(userId: string) {
   );
   const [projects, setProjects] = useLocalStorage<Project[]>(
     `todaystracker_projects_${userId}`,
+    []
+  );
+  const [travelTrips, setTravelTrips] = useLocalStorage<TravelTrip[]>(
+    `todaystracker_travel_${userId}`,
     []
   );
   const [settings, setSettings] = useLocalStorage<AppSettings>(
@@ -200,6 +204,73 @@ export function useAppData(userId: string) {
     );
   }
 
+  function addTravelTrip(name: string) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+
+    const now = new Date().toISOString();
+    const newTrip: TravelTrip = {
+      id: generateId(),
+      name: trimmed,
+      isFinished: false,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    setTravelTrips([newTrip, ...travelTrips]);
+  }
+
+  function updateTravelTrip(
+    tripId: string,
+    updates: Partial<
+      Pick<
+        TravelTrip,
+        | 'name'
+        | 'startDate'
+        | 'endDate'
+        | 'estimatedExpenses'
+        | 'actualExpenses'
+        | 'ticketPrice'
+        | 'plansNote'
+        | 'remindersNote'
+      >
+    >
+  ) {
+    const now = new Date().toISOString();
+
+    setTravelTrips(
+      travelTrips.map((trip) => {
+        if (trip.id !== tripId) return trip;
+
+        const nextName =
+          updates.name !== undefined ? updates.name.trim() || trip.name : trip.name;
+
+        return {
+          ...trip,
+          ...updates,
+          ...(updates.name !== undefined ? { name: nextName } : null),
+          updatedAt: now,
+        };
+      })
+    );
+  }
+
+  function setTravelTripFinished(tripId: string, isFinished: boolean) {
+    const now = new Date().toISOString();
+    setTravelTrips(
+      travelTrips.map((trip) =>
+        trip.id !== tripId
+          ? trip
+          : {
+              ...trip,
+              isFinished,
+              finishedAt: isFinished ? now : undefined,
+              updatedAt: now,
+            }
+      )
+    );
+  }
+
   function updateSettings(updates: Partial<AppSettings>) {
     setSettings({ ...settings, ...updates });
   }
@@ -207,6 +278,7 @@ export function useAppData(userId: string) {
   return {
     days,
     projects,
+    travelTrips,
     settings,
     getOrCreateDay,
     addShift,
@@ -221,6 +293,9 @@ export function useAppData(userId: string) {
     updateProject,
     setProjectDailyNote,
     setProjectFinished,
+    addTravelTrip,
+    updateTravelTrip,
+    setTravelTripFinished,
     updateSettings,
   };
 }

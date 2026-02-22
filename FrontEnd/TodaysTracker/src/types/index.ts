@@ -43,6 +43,22 @@ export type Project = {
   dailyNotes?: Record<string, string>; // keyed by YYYY-MM-DD
 };
 
+export type TravelTrip = {
+  id: string;
+  name: string;
+  startDate?: string; // YYYY-MM-DD
+  endDate?: string; // YYYY-MM-DD
+  estimatedExpenses?: number; // local estimate (without ticket if user wants separate)
+  actualExpenses?: number; // actual spending after return
+  ticketPrice?: number; // ticket / transport booking price
+  plansNote?: string; // what to do there
+  remindersNote?: string; // things to remember
+  isFinished: boolean;
+  createdAt: string; // ISO timestamp
+  updatedAt: string; // ISO timestamp
+  finishedAt?: string; // ISO timestamp
+};
+
 export type AppSettings = {
   dayResetHour: number;       // 0–23, default 4
   currency: string;           // default '€'
@@ -77,6 +93,7 @@ export type Page =
   | 'today'
   | 'dashboard'
   | 'projects'
+  | 'travel'
   | 'sleep'
   | 'settings'
   | 'settings-work'
@@ -133,4 +150,5 @@ export type StorageSchema = {
   days: Record<string, DayData>;
   settings: AppSettings;
   projects?: Project[];
+  travelTrips?: TravelTrip[];
 };

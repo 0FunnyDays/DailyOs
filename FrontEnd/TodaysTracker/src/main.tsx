@@ -2,6 +2,7 @@ import "./index.css";
 import "./styles/colors.css";
 import "./styles/HomePage.css";
 import "./styles/ProjectsPage.css";
+import "./styles/TravelPage.css";
 import "./styles/Header.css";
 import "./styles/AppLayout.css";
 import "./styles/Footer.css";

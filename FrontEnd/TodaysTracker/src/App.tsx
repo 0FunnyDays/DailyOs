@@ -16,6 +16,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { HomePage } from "./pages/HomePage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
+import { TravelPage } from "./pages/TravelPage";
 import { PrioritiesPage } from "./pages/PrioritiesPage";
 import { SleepPage } from "./pages/SleepPage";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -30,6 +31,7 @@ const VALID_PAGES: Page[] = [
   "today",
   "dashboard",
   "projects",
+  "travel",
   "sleep",
   "settings",
   "settings-work",
@@ -119,6 +121,7 @@ function AuthenticatedApp({
   const {
     days,
     projects,
+    travelTrips,
     settings,
     addShift,
     updateShift,
@@ -132,6 +135,9 @@ function AuthenticatedApp({
     updateProject,
     setProjectDailyNote,
     setProjectFinished,
+    addTravelTrip,
+    updateTravelTrip,
+    setTravelTripFinished,
     updateSettings,
   } = useAppData(session.userId);
 
@@ -240,6 +246,16 @@ function AuthenticatedApp({
                             onUpdateProject={updateProject}
                             onSetProjectDailyNote={setProjectDailyNote}
                             onSetProjectFinished={setProjectFinished}
+                          />
+                        );
+                      case "travel":
+                        return (
+                          <TravelPage
+                            trips={travelTrips}
+                            currency={settings.currency}
+                            onAddTrip={addTravelTrip}
+                            onUpdateTrip={updateTravelTrip}
+                            onSetTripFinished={setTravelTripFinished}
                           />
                         );
                       case "sleep":
