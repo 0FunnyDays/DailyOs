@@ -1,4 +1,4 @@
-import type { AppSettings, DayData, Expense, Shift } from '../types';
+import type { AppSettings, DayData, Expense, Project, Shift } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '../utils/idUtils';
 
@@ -23,10 +23,31 @@ const DEFAULT_EXPENSE: Omit<Expense, 'id'> = {
   description: '',
 };
 
+type DayMetaUpdates = Partial<
+  Pick<
+    DayData,
+    | 'focusTask'
+    | 'topPriorities'
+    | 'mustDo'
+    | 'sleepHours'
+    | 'sleepQuality'
+    | 'energyLevel'
+    | 'recoveryNote'
+    | 'mood'
+    | 'winOfDay'
+    | 'reflectionLine'
+    | 'closedAt'
+  >
+>;
+
 export function useAppData(userId: string) {
   const [days, setDays] = useLocalStorage<Record<string, DayData>>(
     `todaystracker_days_${userId}`,
     {}
+  );
+  const [projects, setProjects] = useLocalStorage<Project[]>(
+    `todaystracker_projects_${userId}`,
+    []
   );
   const [settings, setSettings] = useLocalStorage<AppSettings>(
     `todaystracker_settings_${userId}`,
@@ -102,12 +123,90 @@ export function useAppData(userId: string) {
     setDays({ ...days, [date]: { ...day, note } });
   }
 
+  function updateDayMeta(date: string, updates: DayMetaUpdates) {
+    const day = getOrCreateDay(date);
+    setDays({ ...days, [date]: { ...day, ...updates } });
+  }
+
+  function addProject(name: string) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+
+    const now = new Date().toISOString();
+    const newProject: Project = {
+      id: generateId(),
+      name: trimmed,
+      isFinished: false,
+      createdAt: now,
+      updatedAt: now,
+      dailyNotes: {},
+    };
+
+    setProjects([newProject, ...projects]);
+  }
+
+  function updateProject(projectId: string, updates: Partial<Pick<Project, 'name'>>) {
+    const now = new Date().toISOString();
+    setProjects(
+      projects.map((project) => {
+        if (project.id !== projectId) return project;
+
+        const nextName = updates.name !== undefined ? updates.name.trim() : project.name;
+        return {
+          ...project,
+          ...(updates.name !== undefined ? { name: nextName || project.name } : null),
+          updatedAt: now,
+        };
+      })
+    );
+  }
+
+  function setProjectDailyNote(projectId: string, date: string, note: string) {
+    const now = new Date().toISOString();
+    setProjects(
+      projects.map((project) => {
+        if (project.id !== projectId) return project;
+
+        const currentNotes = project.dailyNotes ?? {};
+        const nextNotes = { ...currentNotes };
+        if (note.trim()) {
+          nextNotes[date] = note;
+        } else {
+          delete nextNotes[date];
+        }
+
+        return {
+          ...project,
+          dailyNotes: nextNotes,
+          updatedAt: now,
+        };
+      })
+    );
+  }
+
+  function setProjectFinished(projectId: string, isFinished: boolean) {
+    const now = new Date().toISOString();
+    setProjects(
+      projects.map((project) =>
+        project.id !== projectId
+          ? project
+          : {
+              ...project,
+              isFinished,
+              finishedAt: isFinished ? now : undefined,
+              updatedAt: now,
+            }
+      )
+    );
+  }
+
   function updateSettings(updates: Partial<AppSettings>) {
     setSettings({ ...settings, ...updates });
   }
 
   return {
     days,
+    projects,
     settings,
     getOrCreateDay,
     addShift,
@@ -117,6 +216,11 @@ export function useAppData(userId: string) {
     updateExpense,
     removeExpense,
     updateDayNote,
+    updateDayMeta,
+    addProject,
+    updateProject,
+    setProjectDailyNote,
+    setProjectFinished,
     updateSettings,
   };
 }

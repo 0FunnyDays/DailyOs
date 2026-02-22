@@ -1,18 +1,13 @@
 @import "./colors.css";
 
 /* ==========================================================
-   Header / Top Navigation (clean version)
-   This file styles the current Header.tsx structure:
-   - Brand shell (Daily Os)
-   - Main nav shell (Home / Work / Dashboard / Gym)
-   - Settings shell
-   - Tools shell (theme + avatar)
-   - User menu dropdown
+   Header / Top Navigation (pill dashboard style)
+   Matches current Header.tsx structure with:
+   - left brand chip
+   - centered nav pill group
+   - settings chip
+   - right tool circles
    ========================================================== */
-
-/* ----------------------------------------------------------
-   1) Top row container
-   ---------------------------------------------------------- */
 
 .header-nav {
     width: 100%;
@@ -20,10 +15,10 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 12px;
+    gap: 10px;
+    padding: 2px 0;
 }
 
-/* Small reset only for buttons inside the top nav */
 .header-nav button {
     border: 0;
     background: transparent;
@@ -32,57 +27,37 @@
 }
 
 /* ----------------------------------------------------------
-   2) Shared "glass shell" boxes
-   Used by:
-   - brand shell
-   - settings shell
-   - tools shell (.header__right)
+   Group shells
    ---------------------------------------------------------- */
 
-.header-nav__brand-shell,
-.header-nav__settings-shell,
-.header__right {
+.header-nav__brand-shell {
+    margin-right: auto;
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    padding: 6px;
+}
+
+.header-nav__nav,
+.header-nav__settings-shell {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--clr-surface) 76%, transparent);
-    border: 1px solid color-mix(in srgb, var(--clr-border) 60%, transparent);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+    border: 1px solid color-mix(in srgb, var(--clr-border-2) 60%, transparent);
+    background: color-mix(in srgb, var(--clr-surface) 88%, transparent);
+    backdrop-filter: blur(calc(var(--glass-blur) - 2px));
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 2px));
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 6%, transparent),
+        0 8px 18px rgba(0, 0, 0, 0.12);
 }
-
-[data-theme="light"] .header-nav__brand-shell,
-[data-theme="light"] .header-nav__settings-shell,
-[data-theme="light"] .header__right {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
-}
-
-/* Brand stays at the far left */
-.header-nav__brand-shell {
-    margin-right: auto;
-}
-
-/* ----------------------------------------------------------
-   3) Main navigation shell (group of links)
-   ---------------------------------------------------------- */
 
 .header-nav__nav {
     flex: 0 1 auto;
-    max-width: min(100%, 780px);
     min-width: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    padding: 6px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--clr-surface) 74%, transparent);
-    border: 1px solid color-mix(in srgb, var(--clr-border) 55%, transparent);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
+    max-width: min(100%, 720px);
     white-space: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
@@ -94,12 +69,21 @@
     height: 0;
 }
 
+[data-theme="light"] .header-nav__nav,
+[data-theme="light"] .header-nav__settings-shell {
+    background: color-mix(in srgb, white 88%, var(--clr-surface) 12%);
+    border-color: color-mix(in srgb, rgba(16, 24, 40, 0.12) 85%, transparent);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 10px 22px rgba(0, 0, 0, 0.06);
+}
+
 /* ----------------------------------------------------------
-   4) Buttons inside brand/nav/settings shells
+   Buttons / chips
    ---------------------------------------------------------- */
 
 .header-nav__nav-item {
-    height: 38px;
+    height: 36px;
     padding: 0 14px;
     border-radius: 999px;
     display: inline-flex;
@@ -110,80 +94,157 @@
     flex-shrink: 0;
     cursor: pointer;
     color: var(--clr-text-muted);
-    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    transition:
+        background 0.18s ease,
+        color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
 }
 
 .header-nav__nav-item:hover {
-    background: color-mix(in srgb, var(--clr-surface-2) 75%, transparent);
     color: var(--clr-text);
+    background: color-mix(in srgb, var(--clr-surface-2) 80%, transparent);
+}
+
+.header-nav__nav-item:active {
+    transform: translateY(1px);
 }
 
 .header-nav__nav-item--active {
-    background: color-mix(in srgb, var(--clr-accent-soft) 55%, transparent);
-    color: var(--clr-accent-txt);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--clr-accent) 20%, transparent);
+    background: color-mix(in srgb, var(--clr-surface-2) 70%, black 30%);
+    color: var(--clr-text);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, white 5%, transparent),
+        0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+[data-theme="dark"] .header-nav__nav-item--active {
+    background: rgba(255, 255, 255, 0.96);
+    color: #10131a;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+        0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+[data-theme="dark"] .header-nav__nav-item:not(.header-nav__nav-item--active):active {
+    background: rgba(255, 255, 255, 0.9);
+    color: #10131a;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.45),
+        0 4px 10px rgba(0, 0, 0, 0.14);
 }
 
 [data-theme="light"] .header-nav__nav-item--active {
-    background: color-mix(in srgb, white 80%, var(--clr-accent-soft) 20%);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--clr-accent) 18%, transparent);
+    background: #1f2024;
+    color: #f7f8fb;
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+        0 6px 14px rgba(17, 24, 39, 0.16);
 }
 
 .header-nav__nav-label {
     display: inline-flex;
     align-items: center;
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     font-weight: 600;
     line-height: 1;
+    letter-spacing: -0.01em;
 }
 
-/* Brand button text look */
+/* Brand chip */
 .header-nav__brand {
-    padding-inline: 16px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 999px;
     color: var(--clr-text);
+    font-weight: 700;
+    font-size: 0.98rem;
+    letter-spacing: -0.025em;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--clr-border-2) 85%, transparent);
+    background: color-mix(in srgb, var(--clr-surface) 75%, transparent);
+    backdrop-filter: blur(calc(var(--glass-blur) - 4px));
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 4px));
+    transition:
+        background 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
 }
 
 .header-nav__brand:hover {
-    color: var(--clr-text);
+    background: color-mix(in srgb, var(--clr-surface) 90%, transparent);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--clr-border-2) 95%, transparent),
+        0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
-/* Settings button can be slightly tighter */
+[data-theme="light"] .header-nav__brand {
+    background: color-mix(in srgb, white 92%, var(--clr-surface) 8%);
+    box-shadow: inset 0 0 0 1px rgba(17, 24, 39, 0.18);
+}
+
 .header-nav__settings-btn {
-    padding-inline: 12px;
+    padding-inline: 13px;
 }
 
 /* ----------------------------------------------------------
-   5) Right tools shell (theme toggle + avatar)
+   Right tools (separate circles)
    ---------------------------------------------------------- */
 
 .header__right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
     gap: 8px;
+    margin-left: 2px;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
 }
 
 .header-nav__tools {
     flex-shrink: 0;
 }
 
-.header__theme-toggle {
-    height: 40px;
-    min-width: 40px;
-    padding: 0 11px;
+.header__theme-toggle,
+.header__avatar {
+    height: 38px;
+    min-width: 38px;
     border-radius: 999px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    border: 1px solid color-mix(in srgb, var(--clr-border-2) 70%, transparent);
+    background: color-mix(in srgb, var(--clr-surface) 88%, transparent);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, white 8%, transparent),
+        0 8px 16px rgba(0, 0, 0, 0.10);
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+[data-theme="light"] .header__theme-toggle,
+[data-theme="light"] .header__avatar {
+    background: color-mix(in srgb, white 90%, var(--clr-surface) 10%);
+    border-color: rgba(17, 24, 39, 0.10);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.header__theme-toggle {
+    padding: 0 10px;
     color: var(--clr-accent);
-    background: color-mix(in srgb, var(--clr-accent-soft) 80%, transparent);
-    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
 .header__theme-toggle:hover {
-    background: var(--clr-accent);
-    color: var(--clr-bg);
     transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--clr-accent) 35%, var(--clr-border-2));
+    background: color-mix(in srgb, var(--clr-accent-soft) 72%, var(--clr-surface));
 }
 
 .header__avatar-wrapper {
@@ -192,24 +253,19 @@
 
 .header__avatar {
     padding: 2px;
-    border-radius: 999px;
-    border: 2px solid transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
 .header__avatar:hover,
 .header__avatar[aria-expanded="true"] {
-    border-color: var(--clr-accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--clr-accent-soft) 90%, transparent);
-    background: color-mix(in srgb, var(--clr-accent-soft) 35%, transparent);
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--clr-accent) 30%, var(--clr-border-2));
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--clr-accent-soft) 80%, transparent),
+        0 10px 20px rgba(0, 0, 0, 0.12);
 }
 
 /* ----------------------------------------------------------
-   6) User dropdown menu (avatar menu)
+   User dropdown menu
    ---------------------------------------------------------- */
 
 .user-menu {
@@ -220,7 +276,7 @@
     padding: 6px;
     border-radius: 14px;
     border: 1px solid color-mix(in srgb, var(--clr-border-2) 85%, transparent);
-    background: color-mix(in srgb, var(--clr-surface) 82%, transparent);
+    background: color-mix(in srgb, var(--clr-surface) 90%, transparent);
     backdrop-filter: blur(calc(var(--glass-blur) + 2px));
     -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 2px));
     box-shadow: var(--glass-shadow);
@@ -270,58 +326,77 @@
 }
 
 /* ----------------------------------------------------------
-   7) Responsive tweaks
+   Responsive
    ---------------------------------------------------------- */
 
 @media (max-width: 1100px) {
-    .header-nav__brand {
-        padding-inline: 12px;
-        font-size: 0.95rem;
+    .header-nav {
+        gap: 8px;
+    }
+
+    .header-nav__nav {
+        max-width: min(100%, 620px);
     }
 
     .header-nav__nav-item {
-        height: 36px;
+        height: 34px;
         padding: 0 12px;
     }
 
-    .header__theme-toggle {
+    .header-nav__brand,
+    .header__theme-toggle,
+    .header__avatar {
         height: 36px;
         min-width: 36px;
-        padding: 0 10px;
     }
 }
 
 @media (max-width: 900px) {
     .header-nav {
         gap: 8px;
+        flex-wrap: wrap;
     }
 
-    /* Hide brand shell on small screens to save space */
     .header-nav__brand-shell {
-        display: none;
+        margin-right: 0;
+        order: 1;
     }
 
     .header-nav__nav {
-        flex: 1 1 auto;
-        max-width: none;
+        order: 3;
+        flex: 1 1 100%;
+        max-width: 100%;
+        justify-content: flex-start;
     }
 
     .header-nav__settings-shell {
-        padding: 5px;
+        order: 2;
     }
 
     .header__right {
-        padding: 5px;
+        order: 2;
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 640px) {
+    .header-nav__nav-item {
+        padding: 0 11px;
+    }
+
+    .header-nav__brand {
+        padding-inline: 13px;
+        font-size: 0.92rem;
+    }
+
+    .header__right {
         gap: 6px;
     }
 }
 
-/* ----------------------------------------------------------
-   8) Accessibility: reduced motion
-   ---------------------------------------------------------- */
-
 @media (prefers-reduced-motion: reduce) {
     .header-nav__nav-item,
+    .header-nav__brand,
     .header__theme-toggle,
     .header__avatar,
     .user-menu {

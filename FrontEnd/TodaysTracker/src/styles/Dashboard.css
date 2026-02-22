@@ -109,8 +109,8 @@
 }
 
 .date-picker__input:focus {
-    border-color: var(--clr-accent);
-    box-shadow: 0 0 0 3px var(--clr-accent-soft);
+    border-color: var(--clr-focus-border);
+    box-shadow: var(--shadow-focus-ring);
 }
 
 /* ── Stat Cards ──────────────────────────────────────────── */

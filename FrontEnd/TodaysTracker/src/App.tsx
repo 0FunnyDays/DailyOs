@@ -11,9 +11,13 @@ import { Header } from "./components/Header/Header";
 import { Footer } from "./components/Footer/Footer";
 import { DayView } from "./components/DayView/DayView";
 
+import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { HomePage } from "./pages/HomePage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { ProjectsPage } from "./pages/ProjectsPage";
+import { PrioritiesPage } from "./pages/PrioritiesPage";
+import { SleepPage } from "./pages/SleepPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { WorkSettingsPage } from "./pages/WorkSettingsPage";
 import { GymSettingsPage } from "./pages/GymSettingsPage";
@@ -22,8 +26,11 @@ import { GymPage } from "./pages/GymPage";
 
 const VALID_PAGES: Page[] = [
   "home",
+  "priorities",
   "today",
   "dashboard",
+  "projects",
+  "sleep",
   "settings",
   "settings-work",
   "settings-gym",
@@ -42,14 +49,40 @@ function App() {
     updateAvatar,
     updatePassword,
   } = useAuth();
+  const [authEntryScreen, setAuthEntryScreen] = useState<
+    "landing" | "login" | "register"
+  >("landing");
 
   // Apply saved theme on mount (covers landing/login pages)
   useEffect(() => {
     applyTheme(getSavedTheme());
   }, []);
 
+  useEffect(() => {
+    if (!session) {
+      setAuthEntryScreen("landing");
+    }
+  }, [session]);
+
   if (!session) {
-    return <LoginPage onRegister={register} onLogin={login} />;
+    if (authEntryScreen === "landing") {
+      return (
+        <LandingPage
+          onGetStarted={() => setAuthEntryScreen("register")}
+          onLoginClick={() => setAuthEntryScreen("login")}
+        />
+      );
+    }
+
+    return (
+      <LoginPage
+        key={authEntryScreen}
+        initialMode={authEntryScreen === "register" ? "register" : "login"}
+        onBack={() => setAuthEntryScreen("landing")}
+        onRegister={register}
+        onLogin={login}
+      />
+    );
   }
 
   return (
@@ -85,6 +118,7 @@ function AuthenticatedApp({
 }: AuthenticatedAppProps) {
   const {
     days,
+    projects,
     settings,
     addShift,
     updateShift,
@@ -93,6 +127,11 @@ function AuthenticatedApp({
     updateExpense,
     removeExpense,
     updateDayNote,
+    updateDayMeta,
+    addProject,
+    updateProject,
+    setProjectDailyNote,
+    setProjectFinished,
     updateSettings,
   } = useAppData(session.userId);
 
@@ -140,23 +179,22 @@ function AuthenticatedApp({
     <div className="app">
       <div className="app-shell">
         <div className="app-content">
-          <div className="app-topbar">
-            <Header
-              currentPage={page}
-              onNavigate={navigate}
-              session={session}
-              avatar={currentUser?.avatar ?? null}
-              theme={settings.theme}
-              onToggleTheme={() =>
-                updateSettings({
-                  theme: settings.theme === "dark" ? "light" : "dark",
-                })
-              }
-              onLogout={onLogout}
-            />
-          </div>
-
           <main className="main">
+            <div className="app-topbar">
+              <Header
+                currentPage={page}
+                onNavigate={navigate}
+                session={session}
+                avatar={currentUser?.avatar ?? null}
+                theme={settings.theme}
+                onToggleTheme={() =>
+                  updateSettings({
+                    theme: settings.theme === "dark" ? "light" : "dark",
+                  })
+                }
+                onLogout={onLogout}
+              />
+            </div>
             <div className="main-inner">
               <div className="page-renderer">
                 <div className="page-renderer__content">
@@ -165,10 +203,14 @@ function AuthenticatedApp({
                       case "home":
                         return (
                           <HomePage
-                            session={session}
                             currentDay={currentDay}
                             settings={settings}
+                            gymProgram={gymProgram}
+                            gymSessions={gymSessions}
                             onNavigate={navigate}
+                            onUpdateDayMeta={(updates) =>
+                              updateDayMeta(currentDate, updates)
+                            }
                           />
                         );
                       case "dashboard":
@@ -177,6 +219,38 @@ function AuthenticatedApp({
                             days={days}
                             settings={settings}
                             gymSessions={gymSessions}
+                          />
+                        );
+                      case "priorities":
+                        return (
+                          <PrioritiesPage
+                            day={currentDay}
+                            onUpdateDayMeta={(updates) =>
+                              updateDayMeta(currentDate, updates)
+                            }
+                            onNavigate={navigate}
+                          />
+                        );
+                      case "projects":
+                        return (
+                          <ProjectsPage
+                            projects={projects}
+                            currentDate={currentDate}
+                            onAddProject={addProject}
+                            onUpdateProject={updateProject}
+                            onSetProjectDailyNote={setProjectDailyNote}
+                            onSetProjectFinished={setProjectFinished}
+                          />
+                        );
+                      case "sleep":
+                        return (
+                          <SleepPage
+                            day={currentDay}
+                            days={days}
+                            onUpdateDayMeta={(updates) =>
+                              updateDayMeta(currentDate, updates)
+                            }
+                            onNavigate={navigate}
                           />
                         );
                       case "settings":
@@ -238,9 +312,8 @@ function AuthenticatedApp({
                 </div>
               </div>
             </div>
+            <Footer />
           </main>
-
-          <Footer />
         </div>
       </div>
     </div>

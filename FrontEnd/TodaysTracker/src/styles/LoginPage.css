@@ -1,14 +1,11 @@
 @import "./colors.css";
 
 /* ==========================================================
-   Auth Entry Page (Landing + Login/Register)
-   - Landing view first
-   - Auth form view after CTA
-   - Smooth transitions both directions
+   Login / Register Page
    ========================================================== */
 
 /* ----------------------------------------------------------
-   1) Page base + background
+   1) Page base + layout
    ---------------------------------------------------------- */
 
 .login-page {
@@ -30,79 +27,14 @@
     height: 0;
 }
 
-/* Main animation stage (both views live here) */
 .login-page__stage {
-    position: relative;
     width: min(1180px, 100%);
     min-height: 100%;
     margin: 0 auto;
     padding: 22px 16px 0;
-}
-
-/* ----------------------------------------------------------
-   2) View transition system
-   ---------------------------------------------------------- */
-
-.login-page__view {
-    transition:
-        opacity 320ms ease,
-        transform 460ms cubic-bezier(0.22, 1, 0.36, 1),
-        filter 320ms ease,
-        visibility 0s linear 460ms;
-    will-change: transform, opacity;
-}
-
-/* Landing view is the default visible layer */
-.login-page__view--landing {
-    position: relative;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateX(0) scale(1);
-    filter: blur(0);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Auth view starts hidden and overlays when opened */
-.login-page__view--auth {
-    position: absolute;
-    inset: 0;
     display: grid;
     align-items: center;
-    justify-items: center;
-    padding: 20px 16px;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translateX(42px) scale(0.985);
-    filter: blur(6px);
 }
-
-/* Auth-only mode: landing fades out, auth fades in */
-.login-page--auth-only .login-page__view--landing {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translateX(-36px) scale(0.985);
-    filter: blur(5px);
-}
-
-.login-page--auth-only .login-page__view--auth {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateX(0) scale(1);
-    filter: blur(0);
-    transition-delay: 60ms, 60ms, 60ms, 0s;
-}
-
-/* ----------------------------------------------------------
-   3) Layout wrappers inside each view
-   ---------------------------------------------------------- */
 
 .login-page__content {
     width: min(1180px, 100%);
@@ -112,133 +44,11 @@
 
 .login-page__content--auth {
     width: min(460px, 100%);
-}
-
-.login-page__footer {
-    width: min(1180px, 100%);
-    margin-top: 18px;
-    position: relative;
-    z-index: 1;
+    margin: 0 auto;
 }
 
 /* ----------------------------------------------------------
-   4) Landing / hero side
-   ---------------------------------------------------------- */
-
-.login-hero {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    min-width: 0;
-    padding: 12px 4px 8px;
-}
-
-.login-hero__brand {
-    display: block;
-}
-
-.login-hero__eyebrow {
-    margin: 0 0 8px;
-    color: var(--clr-accent);
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-}
-
-.login-hero__title {
-    margin: 0;
-    color: var(--clr-text);
-    line-height: 1.07;
-    letter-spacing: -0.035em;
-    font-size: clamp(1.8rem, 3vw, 2.65rem);
-    max-width: 18ch;
-}
-
-.login-hero__subtitle {
-    margin: 0;
-    max-width: 60ch;
-    color: var(--clr-text-muted);
-    font-size: 0.96rem;
-    line-height: 1.62;
-}
-
-.login-hero__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 2px;
-}
-
-.login-hero__cta,
-.login-hero__cta-alt {
-    width: auto;
-    min-width: 190px;
-}
-
-.login-hero__features {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    margin-top: 4px;
-}
-
-.login-hero__feature {
-    display: grid;
-    align-content: start;
-    gap: 8px;
-    padding: 16px 14px;
-    border-radius: 18px;
-    background: color-mix(in srgb, var(--clr-surface) 80%, transparent);
-    border: 1px solid color-mix(in srgb, var(--clr-border) 62%, transparent);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
-    transition:
-        transform 180ms ease,
-        border-color 180ms ease,
-        background 180ms ease,
-        box-shadow 180ms ease;
-}
-
-[data-theme="light"] .login-hero__feature {
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.04);
-}
-
-.login-hero__feature:hover {
-    transform: translateY(-2px);
-    border-color: color-mix(in srgb, var(--clr-border-2) 78%, transparent);
-    background: color-mix(in srgb, var(--clr-surface) 86%, transparent);
-}
-
-.login-hero__feature-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--clr-accent);
-    background: color-mix(in srgb, var(--clr-accent-soft) 92%, transparent);
-}
-
-.login-hero__feature-title {
-    margin: 2px 0 0;
-    color: var(--clr-text);
-    font-size: 0.95rem;
-    font-weight: 650;
-    line-height: 1.22;
-}
-
-.login-hero__feature-desc {
-    margin: 0;
-    color: var(--clr-text-muted);
-    font-size: 0.82rem;
-    line-height: 1.45;
-}
-
-/* ----------------------------------------------------------
-   5) Auth panel / card
+   2) Auth panel / card
    ---------------------------------------------------------- */
 
 .login-panel {
@@ -345,8 +155,8 @@
 }
 
 .field__input:focus {
-    border-color: var(--clr-accent);
-    box-shadow: 0 0 0 3px var(--clr-accent-soft);
+    border-color: var(--clr-focus-border);
+    box-shadow: var(--shadow-focus-ring);
 }
 
 .login-error {
@@ -362,7 +172,7 @@
 }
 
 /* ----------------------------------------------------------
-   6) Buttons
+   3) Buttons (shared auth utility buttons)
    ---------------------------------------------------------- */
 
 .btn {
@@ -441,58 +251,30 @@
 }
 
 /* ----------------------------------------------------------
-   7) Focus + accessibility
+   4) Focus + accessibility
    ---------------------------------------------------------- */
 
 .btn:focus-visible,
 .login-toggle:focus-visible,
 .login-back:focus-visible,
 .field__input:focus-visible {
-    outline: 2px solid var(--clr-accent);
+    outline: 2px solid var(--clr-focus-outline);
     outline-offset: 2px;
 }
 
 /* ----------------------------------------------------------
-   8) Responsive
+   5) Responsive
    ---------------------------------------------------------- */
 
 @media (max-width: 980px) {
     .login-page__stage {
         padding: 16px 14px 0;
     }
-
-    .login-hero__title {
-        max-width: none;
-    }
-
-    .login-hero__features {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .login-hero__cta,
-    .login-hero__cta-alt {
-        width: 100%;
-        min-width: 0;
-    }
-
-    .login-page--auth-only .login-page__view--auth {
-        padding: 12px 10px;
-    }
 }
 
 @media (max-width: 640px) {
     .login-page__stage {
         padding: 14px 10px 0;
-    }
-
-    .login-hero {
-        gap: 14px;
-        padding-inline: 2px;
-    }
-
-    .login-hero__title {
-        font-size: 1.45rem;
     }
 
     .login-card {
@@ -506,12 +288,10 @@
 }
 
 /* ----------------------------------------------------------
-   9) Reduced motion
+   6) Reduced motion
    ---------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
-    .login-page__view,
-    .login-hero__feature,
     .login-back,
     .btn,
     .login-toggle,

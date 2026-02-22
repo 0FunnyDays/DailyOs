@@ -20,6 +20,27 @@ export type DayData = {
   shifts: Shift[];
   expenses: Expense[];
   note?: string; // free text daily note
+  focusTask?: string;
+  topPriorities?: string[]; // up to 3 short priorities
+  mustDo?: string;
+  sleepHours?: number;
+  sleepQuality?: 1 | 2 | 3 | 4 | 5;
+  energyLevel?: 1 | 2 | 3 | 4 | 5;
+  recoveryNote?: string;
+  mood?: 'bad' | 'meh' | 'good' | 'great';
+  winOfDay?: string;
+  reflectionLine?: string;
+  closedAt?: string; // ISO timestamp when day was explicitly closed
+};
+
+export type Project = {
+  id: string;
+  name: string;
+  isFinished: boolean;
+  createdAt: string; // ISO timestamp
+  updatedAt: string; // ISO timestamp
+  finishedAt?: string; // ISO timestamp
+  dailyNotes?: Record<string, string>; // keyed by YYYY-MM-DD
 };
 
 export type AppSettings = {
@@ -50,7 +71,18 @@ export type Session = {
   username: string;
 };
 
-export type Page = 'home' | 'today' | 'dashboard' | 'settings' | 'settings-work' | 'settings-gym' | 'profile' | 'gym';
+export type Page =
+  | 'home'
+  | 'priorities'
+  | 'today'
+  | 'dashboard'
+  | 'projects'
+  | 'sleep'
+  | 'settings'
+  | 'settings-work'
+  | 'settings-gym'
+  | 'profile'
+  | 'gym';
 
 // ── Gym types ──────────────────────────────────────────────────────────────
 
@@ -100,4 +132,5 @@ export type GymSession = {
 export type StorageSchema = {
   days: Record<string, DayData>;
   settings: AppSettings;
+  projects?: Project[];
 };

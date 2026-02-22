@@ -14,8 +14,11 @@ type HeaderProps = {
 
 const MAIN_NAV_ITEMS: Array<{ page: Page; label: string }> = [
   { page: "home", label: "Home" },
+  { page: "priorities", label: "Priorities" },
   { page: "today", label: "Work" },
   { page: "dashboard", label: "Dashboard" },
+  { page: "projects", label: "Projects" },
+  { page: "sleep", label: "Sleep" },
   { page: "gym", label: "Gym" },
 ];
 

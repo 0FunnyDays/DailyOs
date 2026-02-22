@@ -1,10 +1,12 @@
 import "./index.css";
 import "./styles/colors.css";
 import "./styles/HomePage.css";
+import "./styles/ProjectsPage.css";
 import "./styles/Header.css";
 import "./styles/AppLayout.css";
 import "./styles/Footer.css";
 import "./styles/LoginPage.css";
+import "./styles/LandingPage.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 

@@ -6,6 +6,61 @@
 
 const TEST_USER_ID = 'seed-user-test-001';
 const USERS_KEY    = 'todaystracker_users';
+const DAYS_KEY     = `todaystracker_days_${TEST_USER_ID}`;
+
+const SEED_MOODS = ['bad', 'meh', 'good', 'great'] as const;
+const SEED_WINS = [
+  'Finished the important thing first.',
+  'Kept momentum even with low energy.',
+  'Logged everything on time.',
+  'Handled work stress better than usual.',
+  'Stayed consistent and did not skip.',
+  'Closed loops instead of postponing.',
+];
+const SEED_REFLECTIONS = [
+  'Good pace today; keep the same start tomorrow.',
+  'Energy dipped midday but recovered well.',
+  'Less overthinking, more action worked.',
+  'Need a cleaner evening routine.',
+  'Solid day overall; sleep earlier tonight.',
+  'Small progress, but still progress.',
+];
+const SEED_FOCUS_TASKS = [
+  'Finish the most important work block before noon.',
+  'Protect focus and avoid context switching.',
+  'Close open tasks from earlier this week.',
+  'Ship one concrete thing today.',
+  'Keep the day simple and execute the plan.',
+  'Prioritize output over busy work.',
+];
+const SEED_MUST_DOS = [
+  'Complete the must-do before checking stats.',
+  'Log work and expenses before the day ends.',
+  'Do one focused block with no distractions.',
+  'Finish the hardest task first.',
+  'Wrap the day with a short reflection.',
+];
+const SEED_PRIORITIES = [
+  'Main work block',
+  'Log shifts and tips',
+  'Review expenses',
+  'Gym session or recovery',
+  'Project next step',
+  'Admin cleanup',
+  'Meal prep / groceries',
+  'Inbox cleanup',
+  'Sleep routine setup',
+  'Plan tomorrow',
+];
+const SEED_RECOVERY_NOTES = [
+  'Slept okay but energy dipped after lunch.',
+  'Better sleep than yesterday, felt more stable.',
+  'Low sleep, keep training lighter today.',
+  'Recovery feels good, push the main task early.',
+  'Late sleep but manageable energy.',
+  '',
+  '',
+];
 
 /** Returns YYYY-MM-DD for N days ago (respects 4 AM reset) */
 function dateAgo(daysBack: number): string {
@@ -19,9 +74,367 @@ function dateAgo(daysBack: number): string {
 function sid(n: number): string { return `seed-s-${String(n).padStart(3, '0')}`; }
 function eid(n: number): string { return `seed-e-${String(n).padStart(3, '0')}`; }
 
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function buildSeedTopPriorities(dateKey: string): string[] {
+  const used = new Set<number>();
+  const items: string[] = [];
+  let offset = 0;
+
+  while (items.length < 3 && offset < 10) {
+    const idx = hashString(`${dateKey}-prio-${offset}`) % SEED_PRIORITIES.length;
+    offset += 1;
+    if (used.has(idx)) continue;
+    used.add(idx);
+    items.push(SEED_PRIORITIES[idx]);
+  }
+
+  return items;
+}
+
+function seedHomeMetaForDays(): void {
+  const raw = localStorage.getItem(DAYS_KEY);
+  if (!raw) return;
+
+  try {
+    const days = JSON.parse(raw) as Record<string, any>;
+    let changed = false;
+
+    for (const [dateKey, day] of Object.entries(days)) {
+      if (!day || typeof day !== 'object') continue;
+
+      const hasActivity = (day.shifts?.length ?? 0) > 0 || (day.expenses?.length ?? 0) > 0;
+      if (!hasActivity) continue;
+
+      const idx = hashString(dateKey) % SEED_WINS.length;
+      const moodIdx = hashString(`${dateKey}-mood`) % SEED_MOODS.length;
+
+      if (!day.mood) {
+        day.mood = SEED_MOODS[moodIdx];
+        changed = true;
+      }
+      if (!day.winOfDay) {
+        day.winOfDay = SEED_WINS[idx];
+        changed = true;
+      }
+      if (!day.reflectionLine) {
+        day.reflectionLine = SEED_REFLECTIONS[idx % SEED_REFLECTIONS.length];
+        changed = true;
+      }
+      if (!day.focusTask) {
+        const focusIdx = hashString(`${dateKey}-focus`) % SEED_FOCUS_TASKS.length;
+        day.focusTask = SEED_FOCUS_TASKS[focusIdx];
+        changed = true;
+      }
+      if (!day.mustDo) {
+        const mustDoIdx = hashString(`${dateKey}-mustdo`) % SEED_MUST_DOS.length;
+        day.mustDo = SEED_MUST_DOS[mustDoIdx];
+        changed = true;
+      }
+      if (!Array.isArray(day.topPriorities) || day.topPriorities.length === 0) {
+        day.topPriorities = buildSeedTopPriorities(dateKey);
+        changed = true;
+      }
+      if (typeof day.sleepHours !== 'number') {
+        const base = 5 + (hashString(`${dateKey}-sleep-hours`) % 9) * 0.5; // 5h - 9h
+        day.sleepHours = Math.min(10, Math.max(4, base));
+        changed = true;
+      }
+      if (typeof day.sleepQuality !== 'number') {
+        day.sleepQuality = ((hashString(`${dateKey}-sleep-quality`) % 5) + 1) as 1 | 2 | 3 | 4 | 5;
+        changed = true;
+      }
+      if (typeof day.energyLevel !== 'number') {
+        day.energyLevel = ((hashString(`${dateKey}-energy`) % 5) + 1) as 1 | 2 | 3 | 4 | 5;
+        changed = true;
+      }
+      if (!day.recoveryNote) {
+        const rIdx = hashString(`${dateKey}-recovery-note`) % SEED_RECOVERY_NOTES.length;
+        const note = SEED_RECOVERY_NOTES[rIdx];
+        if (note) {
+          day.recoveryNote = note;
+          changed = true;
+        }
+      }
+
+      // Make end-of-day visible in Home for testing even during daytime.
+      const isToday = dateKey === dateAgo(0);
+      const shouldMarkClosed = isToday || hashString(`${dateKey}-closed`) % 3 === 0;
+      if (!day.closedAt && shouldMarkClosed) {
+        day.closedAt = `${dateKey}T21:30:00.000Z`;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      localStorage.setItem(DAYS_KEY, JSON.stringify(days));
+    }
+  } catch {
+    // Ignore malformed dev data
+  }
+}
+
+function randInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function chance(probability: number): boolean {
+  return Math.random() < probability;
+}
+
+function pick<T>(items: T[]): T {
+  return items[randInt(0, items.length - 1)];
+}
+
+function roundStep(value: number, step = 0.5): number {
+  return Math.round(value / step) * step;
+}
+
+function toTime(totalMinutes: number): string {
+  const normalized = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60);
+  const h = String(Math.floor(normalized / 60)).padStart(2, '0');
+  const m = String(normalized % 60).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function buildRandomDaysSeed(): Record<string, unknown> {
+  const days: Record<string, unknown> = {};
+
+  const expenseLabels = [
+    'Coffee',
+    'Lunch',
+    'Snack',
+    'Transport',
+    'Water',
+    'Fuel',
+    'Groceries',
+    'Takeaway',
+  ];
+  const notes = [
+    'Solid day, stayed on top of tasks.',
+    'Busy shift but good rhythm.',
+    'Energy was lower than usual after lunch.',
+    'Tips were decent and workflow felt smooth.',
+    'Heavy day but still productive.',
+    'Kept things simple and consistent.',
+    'Good pace, need better sleep tonight.',
+    '',
+    '',
+  ];
+
+  let shiftIdx = 1000;
+  let expIdx = 1000;
+
+  for (let ago = 0; ago < 90; ago += 1) {
+    const dateKey = dateAgo(ago);
+    const shifts: Array<{
+      id: string;
+      startTime: string;
+      endTime: string;
+      payType: 'flat' | 'hourly';
+      payAmount: number;
+      tips: number;
+    }> = [];
+
+    const expenses: Array<{
+      id: string;
+      amount: number;
+      description: string;
+    }> = [];
+
+    const hasMainShift = ago === 0 ? chance(0.9) : chance(0.72);
+    if (hasMainShift) {
+      const startHour = pick([8, 9, 10, 11, 12]);
+      const startMinute = chance(0.35) ? 30 : 0;
+      const durationHours = randInt(6, 9);
+      const durationMinutes = chance(0.25) ? 30 : 0;
+      const startTotal = startHour * 60 + startMinute;
+      const endTotal = startTotal + durationHours * 60 + durationMinutes;
+      const payType = chance(0.62) ? 'flat' : 'hourly';
+      const payAmount = payType === 'hourly' ? roundStep(randInt(6, 11) + (chance(0.35) ? 0.5 : 0), 0.5) : 0;
+      const tips = chance(0.68) ? roundStep(randInt(0, 18) + (chance(0.4) ? 0.5 : 0), 0.5) : 0;
+
+      shifts.push({
+        id: sid(shiftIdx++),
+        startTime: toTime(startTotal),
+        endTime: toTime(endTotal),
+        payType,
+        payAmount,
+        tips,
+      });
+    }
+
+    if (hasMainShift && chance(0.22)) {
+      const startHour = pick([17, 18, 19, 20, 21, 22]);
+      const startMinute = chance(0.35) ? 30 : 0;
+      const durationHours = randInt(2, 5);
+      const durationMinutes = chance(0.3) ? 30 : 0;
+      const startTotal = startHour * 60 + startMinute;
+      const endTotal = startTotal + durationHours * 60 + durationMinutes;
+
+      shifts.push({
+        id: sid(shiftIdx++),
+        startTime: toTime(startTotal),
+        endTime: toTime(endTotal),
+        payType: 'hourly',
+        payAmount: roundStep(randInt(6, 10) + (chance(0.45) ? 0.5 : 0), 0.5),
+        tips: chance(0.55) ? roundStep(randInt(0, 10) + (chance(0.3) ? 0.5 : 0), 0.5) : 0,
+      });
+    }
+
+    const expenseCount =
+      shifts.length > 0
+        ? randInt(0, 2) + (chance(0.25) ? 1 : 0)
+        : (chance(0.16) ? 1 : 0);
+
+    for (let i = 0; i < expenseCount; i += 1) {
+      const amount =
+        chance(0.75)
+          ? roundStep(randInt(2, 12) + (chance(0.3) ? 0.5 : 0), 0.5)
+          : roundStep(randInt(12, 35) + (chance(0.25) ? 0.5 : 0), 0.5);
+
+      expenses.push({
+        id: eid(expIdx++),
+        amount,
+        description: pick(expenseLabels),
+      });
+    }
+
+    // Keep some true days off missing entirely from the record.
+    if (shifts.length === 0 && expenses.length === 0 && chance(0.75)) {
+      continue;
+    }
+
+    days[dateKey] = {
+      date: dateKey,
+      note: pick(notes),
+      shifts,
+      expenses,
+    };
+  }
+
+  return days;
+}
+
+function ensureThreeMonthDaysSeed(): void {
+  const raw = localStorage.getItem(DAYS_KEY);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      if (Object.keys(parsed).length >= 70) {
+        seedHomeMetaForDays();
+        return;
+      }
+    } catch {
+      // Rebuild malformed data below
+    }
+  }
+
+  localStorage.setItem(DAYS_KEY, JSON.stringify(buildRandomDaysSeed()));
+  seedHomeMetaForDays();
+}
+
+function buildRandomGymSessionsSeed(): Record<string, unknown> {
+  const sessions: Record<string, unknown> = {};
+
+  const templates = [
+    {
+      dayTemplateId: 'tpl-push',
+      dayName: 'Push',
+      exercises: [
+        { name: 'Bench Press', baseWeight: 75, reps: [10, 8, 6, 6] },
+        { name: 'Overhead Press', baseWeight: 42.5, reps: [10, 8, 8] },
+        { name: 'Incline Dumbbell', baseWeight: 24, reps: [12, 10, 10] },
+        { name: 'Lateral Raises', baseWeight: 10, reps: [15, 12, 12] },
+        { name: 'Tricep Pushdown', baseWeight: 27.5, reps: [12, 10, 10] },
+      ],
+    },
+    {
+      dayTemplateId: 'tpl-pull',
+      dayName: 'Pull',
+      exercises: [
+        { name: 'Deadlift', baseWeight: 115, reps: [8, 6, 4, 4] },
+        { name: 'Barbell Row', baseWeight: 60, reps: [10, 8, 8] },
+        { name: 'Lat Pulldown', baseWeight: 50, reps: [12, 10, 10] },
+        { name: 'Face Pulls', baseWeight: 15, reps: [15, 15, 12] },
+        { name: 'Barbell Curl', baseWeight: 25, reps: [12, 10, 10] },
+      ],
+    },
+    {
+      dayTemplateId: 'tpl-legs',
+      dayName: 'Legs',
+      exercises: [
+        { name: 'Squat', baseWeight: 90, reps: [10, 8, 6, 6] },
+        { name: 'Romanian Deadlift', baseWeight: 75, reps: [10, 8, 8] },
+        { name: 'Leg Press', baseWeight: 150, reps: [12, 10, 10] },
+        { name: 'Leg Curl', baseWeight: 37.5, reps: [12, 10, 10] },
+        { name: 'Calf Raises', baseWeight: 60, reps: [15, 15, 12] },
+      ],
+    },
+  ] as const;
+
+  const notes = [
+    'Felt strong today.',
+    'Good session, solid tempo.',
+    'Energy was average but got it done.',
+    'Form focus day.',
+    'Short session, still productive.',
+    '',
+    '',
+  ];
+
+  let gymExIdx = 1;
+  let gymSetIdx = 1;
+  let templateRotation = randInt(0, templates.length - 1);
+
+  for (let ago = 0; ago < 90; ago += 1) {
+    const shouldTrain = ago === 0 ? chance(0.45) : chance(0.42);
+    if (!shouldTrain) continue;
+
+    const dateKey = dateAgo(ago);
+    const template = templates[templateRotation % templates.length];
+    templateRotation += 1;
+
+    sessions[dateKey] = {
+      date: dateKey,
+      dayTemplateId: template.dayTemplateId,
+      dayName: template.dayName,
+      exercises: template.exercises.map((exercise) => ({
+        id: `seed-gex-${String(gymExIdx++).padStart(3, '0')}`,
+        templateId: `seed-gtpl-${exercise.name.toLowerCase().replace(/\s+/g, '-')}`,
+        name: exercise.name,
+        type: 'strength',
+        sets: exercise.reps.map((reps) => ({
+          id: `seed-gs-${String(gymSetIdx++).padStart(3, '0')}`,
+          reps: Math.max(1, reps + randInt(-1, 1)),
+          weight: Math.max(0, roundStep(exercise.baseWeight + randInt(-10, 10) * 0.5, 0.5)),
+        })),
+      })),
+      note: pick(notes) || undefined,
+    };
+  }
+
+  return sessions;
+}
+
 function seedGymSessions(): void {
   const GYM_KEY = `todaystracker_gym_sessions_${TEST_USER_ID}`;
-  if (localStorage.getItem(GYM_KEY)) return; // already seeded
+  const existingRaw = localStorage.getItem(GYM_KEY);
+  if (existingRaw) {
+    try {
+      const parsed = JSON.parse(existingRaw) as Record<string, unknown>;
+      if (Object.keys(parsed).length >= 28) return; // ~3 months with ~3-4 sessions/week
+    } catch {
+      // Rebuild malformed data below
+    }
+  }
+
+  localStorage.setItem(GYM_KEY, JSON.stringify(buildRandomGymSessionsSeed()));
+  return;
 
   const gymSessions: Record<string, unknown> = {};
 
@@ -153,8 +566,10 @@ export function seedTestUser(): void {
     const userExists = users.some((u: { id: string }) => u.id === TEST_USER_ID);
 
     if (userExists) {
+      ensureThreeMonthDaysSeed();
       // User exists — just ensure gym data is seeded
       seedGymSessions();
+      seedHomeMetaForDays();
       return;
     }
 
@@ -175,6 +590,10 @@ export function seedTestUser(): void {
       workingDaysPerMonth: 22,
       theme:               'dark',
     }));
+    ensureThreeMonthDaysSeed();
+    seedGymSessions();
+    console.info('[seed] Test account ready â€” username: test / password: test12');
+    return;
 
     // ── Days ──────────────────────────────────────────────────────────────────
     // Each entry: [daysAgo, shifts[], expenses[], note]
@@ -339,7 +758,8 @@ export function seedTestUser(): void {
       };
     }
 
-    localStorage.setItem(`todaystracker_days_${TEST_USER_ID}`, JSON.stringify(days));
+    localStorage.setItem(DAYS_KEY, JSON.stringify(days));
+    seedHomeMetaForDays();
 
     seedGymSessions();
     console.info('[seed] Test account ready — username: test / password: test12');
