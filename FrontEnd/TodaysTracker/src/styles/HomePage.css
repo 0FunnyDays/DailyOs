@@ -1,20 +1,43 @@
-/* HomePage.css - Styles for the HomePage component */
+/* ============================================================
+   HOME PAGE — Glass / Modern
+   ============================================================ */
+@import "./colors.css";
 
 .home {
-    padding: 2rem 2.5rem;
-    max-width: 700px;
+    padding: 32px 28px;
+    max-width: 720px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    color: var(--clr-text);
+    gap: 28px;
+    animation: home-enter 0.3s ease-out;
+}
+
+@keyframes home-enter {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Hero / Greeting ─────────────────────────────────────── */
+
+.home__hero {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .home__greeting {
-    font-size: 2.2rem;
+    font-size: 1.75rem;
     font-weight: 700;
-    margin-bottom: 0.2em;
     color: var(--clr-text);
+    letter-spacing: -0.01em;
+    margin: 0;
 }
 
 .home__username {
@@ -22,143 +45,177 @@
 }
 
 .home__date {
-    font-size: 1.1rem;
+    font-size: 0.9375rem;
     color: var(--clr-text-muted);
-    margin-bottom: 1.5rem;
+    margin: 0;
+}
+
+/* ── Section title ───────────────────────────────────────── */
+
+.home__section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-text-dim);
+    margin: 0 0 12px;
+}
+
+/* ── Summary section ─────────────────────────────────────── */
+
+.home__summary {
+    display: flex;
+    flex-direction: column;
 }
 
 .home__stats {
-    display: flex;
-    gap: 2rem;
-    justify-content: flex-start;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
 }
 
 .home__stat {
-    background: var(--clr-card);
-    border-radius: 1rem;
-    padding: 1.2rem 1.8rem;
+    background: var(--clr-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--clr-border);
+    border-radius: 14px;
+    padding: 16px 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 110px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    gap: 4px;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.home__stat:hover {
+    border-color: var(--clr-border-2);
+    transform: translateY(-2px);
+}
+
+.home__stat--accent {
+    border-color: var(--clr-accent-soft);
+    background: var(--clr-accent-soft);
+}
+
+.home__stat--accent .home__stat-value {
+    color: var(--clr-accent-txt);
 }
 
 .home__stat-value {
-    font-size: 1.7rem;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 700;
     color: var(--clr-text);
+    letter-spacing: -0.01em;
 }
 
 .home__stat-label {
-    font-size: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
     color: var(--clr-text-muted);
-    margin-top: 0.3em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-.home__section-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin: 2.5rem 0 1rem 0;
-    color: var(--clr-text);
+.home__empty {
+    font-size: 0.875rem;
+    color: var(--clr-text-dim);
+    margin: 12px 0 0;
+    text-align: center;
 }
+
+/* ── Quick access cards ──────────────────────────────────── */
 
 .home__cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
 }
 
 .home__card {
-    background: var(--clr-card);
-    border: none;
-    border-radius: 1.2rem;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
-    padding: 1.5rem 2rem;
+    background: var(--clr-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--clr-border);
+    border-radius: 14px;
+    padding: 18px 16px;
     display: flex;
     align-items: center;
-    gap: 1.2rem;
-    min-width: 220px;
-    flex: 1 1 220px;
+    gap: 14px;
     cursor: pointer;
-    transition: box-shadow 0.15s, transform 0.15s;
     outline: none;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
 .home__card:hover,
-.home__card:focus {
-    box-shadow: 0 4px 16px var(--clr-accent-soft, rgba(200, 238, 68, 0.13));
-    transform: translateY(-2px) scale(1.02);
+.home__card:focus-visible {
+    border-color: var(--clr-accent-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
 .home__card-icon {
-    color: var(--clr-accent);
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
-    font-size: 2rem;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--clr-accent-soft);
+    color: var(--clr-accent);
+    flex-shrink: 0;
 }
 
 .home__card-text {
-    flex: 1 1 auto;
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
 }
 
 .home__card-title {
-    font-size: 1.1rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--clr-text);
 }
 
 .home__card-desc {
-    font-size: 0.98rem;
+    font-size: 0.8125rem;
     color: var(--clr-text-muted);
-    margin-top: 0.2em;
 }
 
 .home__card-arrow {
-    color: var(--clr-accent);
+    color: var(--clr-text-dim);
     display: flex;
     align-items: center;
-    font-size: 1.2rem;
-    margin-left: 0.5rem;
+    flex-shrink: 0;
+    transition: color 0.15s, transform 0.15s;
 }
 
-@media (max-width: 900px) {
+.home__card:hover .home__card-arrow {
+    color: var(--clr-accent);
+    transform: translateX(2px);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 640px) {
     .home {
-        padding: 1.2rem 0.7rem;
+        padding: 20px 16px;
+        gap: 24px;
+    }
+
+    .home__greeting {
+        font-size: 1.5rem;
     }
 
     .home__stats {
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .home__cards {
-        gap: 1rem;
-    }
-}
-
-@media (max-width: 600px) {
-    .home {
-        padding: 0.5rem 0.2rem;
-    }
-
-    .home__stats {
-        flex-direction: column;
-        gap: 0.7rem;
-        align-items: stretch;
-    }
-
-    .home__cards {
-        flex-direction: column;
-        gap: 0.7rem;
-    }
-
-    .home__card {
-        min-width: 0;
-        width: 100%;
-        padding: 1.1rem 1rem;
+        grid-template-columns: 1fr;
     }
 }

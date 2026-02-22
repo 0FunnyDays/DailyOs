@@ -1,0 +1,43 @@
+/* ============================================================
+   AVATAR
+   ============================================================ */
+
+.avatar {
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* ── Sizes ──────────────────────────────────────────────── */
+
+.avatar--sm {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+}
+
+.avatar--md {
+    width: 40px;
+    height: 40px;
+    font-size: 0.875rem;
+}
+
+.avatar--lg {
+    width: 56px;
+    height: 56px;
+    font-size: 1.125rem;
+}
+
+/* ── Initials fallback ──────────────────────────────────── */
+
+.avatar--initials {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--clr-accent-soft);
+    color: var(--clr-accent-txt);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--clr-border);
+    user-select: none;
+}

@@ -1,26 +1,27 @@
-import { useMemo } from 'react';
-import type { DayData, AppSettings } from '../types';
+import { useState, useMemo, useCallback } from 'react';
+import type { DayData, AppSettings, GymSession } from '../types';
 import { calculateHours } from '../utils/dateUtils';
 import { calculateDayTotals } from '../utils/payUtils';
+import {
+  getDateRangeBetween,
+  computeDailyTotals,
+  getChartData,
+  todayStr,
+  daysAgo,
+  getEarliestDate,
+} from '../utils/dashboardUtils';
+
+import { DateRangePicker } from '../components/shared/DateRangePicker';
+import type { DateRange, DateRangePreset } from '../components/shared/DateRangePicker';
+import { StatCard } from '../components/shared/StatCard';
+import { BarChart } from '../components/shared/BarChart';
+import { BreakdownBar } from '../components/shared/BreakdownBar';
+import '../styles/Dashboard.css';
 
 type DashboardPageProps = {
   days: Record<string, DayData>;
   settings: AppSettings;
 };
-
-function getDateRange(daysBack: number): string[] {
-  const dates: string[] = [];
-  const now = new Date();
-  for (let i = 0; i < daysBack; i++) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    dates.push(`${y}-${m}-${day}`);
-  }
-  return dates;
-}
 
 function computeStats(days: Record<string, DayData>, dateKeys: string[], flatDailyPay: number) {
   let totalHours = 0;
@@ -56,59 +57,131 @@ function computeStats(days: Record<string, DayData>, dateKeys: string[], flatDai
   };
 }
 
+function presetToRange(preset: DateRangePreset, days: Record<string, DayData>): DateRange {
+  const to = todayStr();
+  switch (preset) {
+    case '7d': return { from: daysAgo(7), to };
+    case '30d': return { from: daysAgo(30), to };
+    case '3m': return { from: daysAgo(90), to };
+    case '1y': return { from: daysAgo(365), to };
+    case 'all': return { from: getEarliestDate(days), to };
+  }
+}
+
+// SVG Icons
+const ClockIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+
+const DollarIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+  </svg>
+);
+
+const TipsIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z" />
+  </svg>
+);
+
+const NetIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="20" x2="12" y2="4" /><polyline points="6 10 12 4 18 10" />
+  </svg>
+);
+
 export function DashboardPage({ days, settings }: DashboardPageProps) {
   const flatDailyPay = settings.workingDaysPerMonth > 0
     ? settings.monthlyFlatSalary / settings.workingDaysPerMonth
     : 0;
 
-  const weekDates = useMemo(() => getDateRange(7), []);
-  const monthDates = useMemo(() => getDateRange(30), []);
+  const [activePreset, setActivePreset] = useState<DateRangePreset | null>('7d');
+  const [dateRange, setDateRange] = useState<DateRange>(() => presetToRange('7d', days));
 
-  const weekStats = useMemo(() => computeStats(days, weekDates, flatDailyPay), [days, weekDates, flatDailyPay]);
-  const monthStats = useMemo(() => computeStats(days, monthDates, flatDailyPay), [days, monthDates, flatDailyPay]);
+  const handlePresetChange = useCallback((preset: DateRangePreset) => {
+    setActivePreset(preset);
+    setDateRange(presetToRange(preset, days));
+  }, [days]);
+
+  const handleCustomRange = useCallback((range: DateRange) => {
+    setActivePreset(null);
+    setDateRange(range);
+  }, []);
 
   const cur = settings.currency;
+
+  // Computed data
+  const dateKeys = useMemo(() => getDateRangeBetween(dateRange.from, dateRange.to), [dateRange]);
+  const stats = useMemo(() => computeStats(days, dateKeys, flatDailyPay), [days, dateKeys, flatDailyPay]);
+  const dailyTotals = useMemo(() => computeDailyTotals(days, dateKeys, flatDailyPay), [days, dateKeys, flatDailyPay]);
+  const chartData = useMemo(() => getChartData(dailyTotals, cur), [dailyTotals, cur]);
+
+  const breakdownSegments = useMemo(() => [
+    { label: 'Pay', value: stats.totalGross, color: 'var(--clr-green)' },
+    { label: 'Tips', value: stats.totalTips, color: 'var(--clr-yellow)' },
+    { label: 'Expenses', value: stats.totalExpenses, color: 'var(--clr-red)' },
+  ], [stats]);
 
   return (
     <div className="dashboard">
       <h2 className="dashboard__title">Dashboard</h2>
 
-      {/* Weekly stats */}
-      <h3 className="dashboard__section-title">Last 7 days</h3>
-      <div className="dashboard__cards">
-        <StatCard label="Hours Worked" value={`${weekStats.totalHours}h`} variant="blue" />
-        <StatCard label="Gross Pay" value={`${cur}${weekStats.totalGross.toFixed(2)}`} variant="green" />
-        <StatCard label="Tips" value={`${cur}${weekStats.totalTips.toFixed(2)}`} variant="amber" />
-        <StatCard label="Expenses" value={`${cur}${weekStats.totalExpenses.toFixed(2)}`} variant="red" />
-        <StatCard label="Net Earnings" value={`${cur}${weekStats.netEarnings.toFixed(2)}`} variant="accent" />
-        <StatCard label="Days Worked" value={`${weekStats.daysWorked}`} variant="purple" />
-      </div>
+      <DateRangePicker
+        value={dateRange}
+        onChange={handleCustomRange}
+        activePreset={activePreset}
+        onPresetChange={handlePresetChange}
+      />
 
-      {/* Monthly stats */}
-      <h3 className="dashboard__section-title">Last 30 days</h3>
-      <div className="dashboard__cards">
-        <StatCard label="Hours Worked" value={`${monthStats.totalHours}h`} variant="blue" />
-        <StatCard label="Gross Pay" value={`${cur}${monthStats.totalGross.toFixed(2)}`} variant="green" />
-        <StatCard label="Tips" value={`${cur}${monthStats.totalTips.toFixed(2)}`} variant="amber" />
-        <StatCard label="Expenses" value={`${cur}${monthStats.totalExpenses.toFixed(2)}`} variant="red" />
-        <StatCard label="Net Earnings" value={`${cur}${monthStats.netEarnings.toFixed(2)}`} variant="accent" />
-        <StatCard label="Days Worked" value={`${monthStats.daysWorked}`} variant="purple" />
-      </div>
-    </div>
-  );
-}
+      {/* Summary cards */}
+      <section>
+        <h3 className="dashboard__section-title">Summary</h3>
+        <div className="dashboard__cards">
+          <StatCard
+            icon={ClockIcon}
+            label="Hours Worked"
+            value={`${stats.totalHours}h`}
+            variant="blue"
+          />
+          <StatCard
+            icon={DollarIcon}
+            label="Gross Pay"
+            value={`${cur}${stats.totalGross.toFixed(2)}`}
+            variant="green"
+          />
+          <StatCard
+            icon={TipsIcon}
+            label="Tips"
+            value={`${cur}${stats.totalTips.toFixed(2)}`}
+            variant="amber"
+          />
+          <StatCard
+            icon={NetIcon}
+            label="Net Earnings"
+            value={`${cur}${stats.netEarnings.toFixed(2)}`}
+            variant="accent"
+          />
+        </div>
+      </section>
 
-type StatCardProps = {
-  label: string;
-  value: string;
-  variant: 'blue' | 'green' | 'amber' | 'red' | 'accent' | 'purple';
-};
+      {/* Earnings chart */}
+      <section>
+        <h3 className="dashboard__section-title">Earnings Over Time</h3>
+        <div className="dashboard__chart-card">
+          <BarChart data={chartData} />
+        </div>
+      </section>
 
-function StatCard({ label, value, variant }: StatCardProps) {
-  return (
-    <div className={`stat-card stat-card--${variant}`}>
-      <span className="stat-card__label">{label}</span>
-      <span className="stat-card__value">{value}</span>
+      {/* Breakdown */}
+      <section>
+        <h3 className="dashboard__section-title">Breakdown</h3>
+        <div className="dashboard__breakdown-card">
+          <BreakdownBar segments={breakdownSegments} currency={cur} />
+        </div>
+      </section>
     </div>
   );
 }

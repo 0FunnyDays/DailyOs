@@ -1,3 +1,5 @@
+import '../../styles/Avatar.css';
+
 type AvatarSize = 'sm' | 'md' | 'lg';
 
 type AvatarProps = {

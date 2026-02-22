@@ -29,12 +29,28 @@
     color: var(--clr-accent);
 }
 
+/* ── Avatar trigger ──────────────────────────────────────── */
+
+.header__avatar-wrapper {
+    position: relative;
+}
+
 .header__avatar {
-    width: 40px;
-    height: 40px;
+    background: none;
+    border: 2px solid transparent;
     border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--clr-accent);
+    padding: 2px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header__avatar:hover,
+.header__avatar[aria-expanded="true"] {
+    border-color: var(--clr-accent);
+    box-shadow: 0 0 0 3px var(--clr-accent-soft);
 }
 
 .header__right {
@@ -59,18 +75,62 @@
     color: var(--clr-bg);
 }
 
-.header__logout {
-    background: var(--clr-red-soft);
-    color: var(--clr-red);
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background 0.2s;
+/* ── User dropdown menu ──────────────────────────────────── */
+
+.user-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 180px;
+    background: var(--clr-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--clr-border-2);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: var(--glass-shadow);
+    z-index: 100;
+    animation: menu-enter 0.15s ease-out;
 }
 
-.header__logout:hover {
-    background: var(--clr-red);
-    color: var(--clr-bg);
+@keyframes menu-enter {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.user-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    color: var(--clr-text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-align: left;
+}
+
+.user-menu__item:hover {
+    background: var(--clr-accent-soft);
+    color: var(--clr-accent-txt);
+}
+
+.user-menu__item--danger {
+    color: var(--clr-red);
+}
+
+.user-menu__item--danger:hover {
+    background: var(--clr-red-soft);
+    color: var(--clr-red);
 }

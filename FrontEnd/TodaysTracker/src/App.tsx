@@ -5,7 +5,7 @@ import { useAuth } from "./hooks/useAuth";
 import { useAppData } from "./hooks/useAppData";
 import { useGymData } from "./hooks/useGymData";
 import { useCurrentDay } from "./hooks/useCurrentDay";
-import { applyTheme } from "./utils/themeUtils";
+import { applyTheme, getSavedTheme } from "./utils/themeUtils";
 
 import { Sidebar } from "./components/Sidebar/Sidebar";
 import { Header } from "./components/Header/Header";
@@ -29,6 +29,11 @@ function App() {
   } = useAuth();
 
   const [showLogin, setShowLogin] = useState(false);
+
+  // Apply saved theme on mount (covers landing/login pages)
+  useEffect(() => {
+    applyTheme(getSavedTheme());
+  }, []);
 
   if (!session) {
     if (showLogin) {
@@ -150,7 +155,6 @@ function AuthenticatedApp({
 
       <div className="app-content">
         <Header
-          currentDate={currentDate}
           session={session}
           avatar={currentUser?.avatar ?? null}
           theme={settings.theme}

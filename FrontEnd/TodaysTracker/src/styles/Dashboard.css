@@ -1,0 +1,411 @@
+/* ============================================================
+   DASHBOARD PAGE — Premium Infographic Style
+   ============================================================ */
+@import "./colors.css";
+
+.dashboard {
+    padding: 36px 32px;
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    animation: dash-enter 0.35s ease-out;
+}
+
+@keyframes dash-enter {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard__title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--clr-text);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.dashboard__section-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--clr-text-muted);
+    margin: 0 0 14px;
+}
+
+/* ── Date Range Picker ───────────────────────────────────── */
+
+.date-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.date-picker__presets {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.date-picker__btn {
+    padding: 9px 18px;
+    border: 1px solid var(--clr-border-2);
+    border-radius: 10px;
+    background: var(--clr-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    color: var(--clr-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.date-picker__btn:hover {
+    background: var(--clr-surface-2);
+    color: var(--clr-text);
+    border-color: var(--clr-border-2);
+    transform: translateY(-1px);
+}
+
+.date-picker__btn--active {
+    background: var(--clr-accent);
+    color: var(--clr-bg);
+    border-color: var(--clr-accent);
+    font-weight: 700;
+    box-shadow: 0 2px 12px rgba(200, 238, 68, 0.25);
+}
+
+[data-theme="light"] .date-picker__btn--active {
+    box-shadow: 0 2px 12px rgba(26, 122, 64, 0.2);
+}
+
+.date-picker__custom {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-picker__label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--clr-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.date-picker__input {
+    height: 38px;
+    padding: 0 12px;
+    background: var(--clr-input);
+    border: 1px solid var(--clr-border);
+    border-radius: 10px;
+    color: var(--clr-text);
+    font-size: 0.8125rem;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.date-picker__input:focus {
+    border-color: var(--clr-accent);
+    box-shadow: 0 0 0 3px var(--clr-accent-soft);
+}
+
+/* ── Stat Cards ──────────────────────────────────────────── */
+
+.dashboard__cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.stat-card {
+    position: relative;
+    border-radius: 16px;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .stat-card:hover {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+}
+
+/* Colored left accent bar */
+.stat-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+}
+
+.stat-card__icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.stat-card__value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--clr-text);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.stat-card__label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--clr-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ── Stat card — Blue variant ────────────────────────────── */
+
+.stat-card--blue {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.12) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(96, 165, 250, 0.15);
+}
+.stat-card--blue::before          { background: var(--clr-blue); }
+.stat-card--blue .stat-card__icon { background: var(--clr-blue-soft); color: var(--clr-blue); }
+
+[data-theme="light"] .stat-card--blue {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, var(--clr-surface) 100%);
+    border-color: rgba(37, 99, 235, 0.12);
+}
+
+/* ── Stat card — Green variant ───────────────────────────── */
+
+.stat-card--green {
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.12) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(52, 211, 153, 0.15);
+}
+.stat-card--green::before          { background: var(--clr-green); }
+.stat-card--green .stat-card__icon { background: var(--clr-green-soft); color: var(--clr-green); }
+
+[data-theme="light"] .stat-card--green {
+    background: linear-gradient(135deg, rgba(26, 122, 64, 0.08) 0%, var(--clr-surface) 100%);
+    border-color: rgba(26, 122, 64, 0.12);
+}
+
+/* ── Stat card — Amber variant ───────────────────────────── */
+
+.stat-card--amber {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.10) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.12);
+}
+.stat-card--amber::before          { background: var(--clr-yellow); }
+.stat-card--amber .stat-card__icon { background: var(--clr-yellow-soft); color: var(--clr-yellow); }
+
+[data-theme="light"] .stat-card--amber {
+    background: linear-gradient(135deg, rgba(180, 83, 9, 0.06) 0%, var(--clr-surface) 100%);
+    border-color: rgba(180, 83, 9, 0.10);
+}
+
+/* ── Stat card — Accent variant ──────────────────────────── */
+
+.stat-card--accent {
+    background: linear-gradient(135deg, rgba(200, 238, 68, 0.14) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(200, 238, 68, 0.18);
+}
+.stat-card--accent::before          { background: var(--clr-accent); }
+.stat-card--accent .stat-card__icon { background: var(--clr-accent-soft); color: var(--clr-accent); }
+.stat-card--accent .stat-card__value { color: var(--clr-accent-txt); }
+
+[data-theme="light"] .stat-card--accent {
+    background: linear-gradient(135deg, rgba(26, 122, 64, 0.10) 0%, var(--clr-surface) 100%);
+    border-color: rgba(26, 122, 64, 0.15);
+}
+
+/* ── Stat card — Red variant ─────────────────────────────── */
+
+.stat-card--red {
+    background: linear-gradient(135deg, rgba(248, 113, 113, 0.10) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(248, 113, 113, 0.12);
+}
+.stat-card--red::before          { background: var(--clr-red); }
+.stat-card--red .stat-card__icon { background: var(--clr-red-soft); color: var(--clr-red); }
+
+[data-theme="light"] .stat-card--red {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.06) 0%, var(--clr-surface) 100%);
+    border-color: rgba(220, 38, 38, 0.10);
+}
+
+/* ── Stat card — Purple variant ──────────────────────────── */
+
+.stat-card--purple {
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.10) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(167, 139, 250, 0.12);
+}
+.stat-card--purple::before          { background: var(--clr-purple); }
+.stat-card--purple .stat-card__icon { background: var(--clr-purple-soft); color: var(--clr-purple); }
+
+[data-theme="light"] .stat-card--purple {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.06) 0%, var(--clr-surface) 100%);
+    border-color: rgba(124, 58, 237, 0.10);
+}
+
+/* ── Chart card ──────────────────────────────────────────── */
+
+.dashboard__chart-card {
+    background: var(--clr-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--clr-border);
+    border-radius: var(--glass-radius);
+    padding: 28px 24px 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .dashboard__chart-card {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Bar Chart ───────────────────────────────────────────── */
+
+.bar-chart {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.bar-chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.bar-chart__empty {
+    text-align: center;
+    padding: 56px 20px;
+    color: var(--clr-text-dim);
+    font-size: 0.9375rem;
+    font-weight: 500;
+}
+
+/* ── Breakdown card ──────────────────────────────────────── */
+
+.dashboard__breakdown-card {
+    background: var(--clr-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--clr-border);
+    border-radius: var(--glass-radius);
+    padding: 28px 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .dashboard__breakdown-card {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+}
+
+.breakdown-bar__track {
+    height: 32px;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    background: var(--clr-surface-2);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.breakdown-bar__segment {
+    height: 100%;
+    transition: flex-basis 0.4s ease;
+    min-width: 0;
+}
+
+.breakdown-bar__segment:first-child {
+    border-radius: 16px 0 0 16px;
+}
+
+.breakdown-bar__segment:last-child {
+    border-radius: 0 16px 16px 0;
+}
+
+.breakdown-bar__segment:only-child {
+    border-radius: 16px;
+}
+
+.breakdown-bar__legend {
+    display: flex;
+    gap: 28px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+.breakdown-bar__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8125rem;
+    color: var(--clr-text-muted);
+}
+
+.breakdown-bar__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.breakdown-bar__legend-value {
+    font-weight: 700;
+    color: var(--clr-text);
+    font-size: 0.875rem;
+}
+
+.breakdown-bar__empty {
+    text-align: center;
+    padding: 16px;
+    color: var(--clr-text-dim);
+    font-size: 0.875rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .dashboard__cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard {
+        padding: 20px 16px;
+        gap: 24px;
+    }
+
+    .dashboard__cards {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card__value {
+        font-size: 1.35rem;
+    }
+
+    .date-picker__custom {
+        flex-wrap: wrap;
+    }
+
+    .dashboard__chart-card,
+    .dashboard__breakdown-card {
+        padding: 20px 16px;
+    }
+}

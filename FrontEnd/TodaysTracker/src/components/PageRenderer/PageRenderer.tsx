@@ -88,7 +88,7 @@ export function PageRenderer(props: Props) {
                 />
               );
             case "dashboard":
-              return <DashboardPage days={days} settings={settings} />;
+              return <DashboardPage days={days} settings={settings} gymSessions={gymSessions} />;
             case "settings":
               return <SettingsPage onNavigate={navigate} />;
             case "settings-work":

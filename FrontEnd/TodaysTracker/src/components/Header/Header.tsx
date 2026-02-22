@@ -3,7 +3,6 @@ import type { Session } from "../../types";
 import { Avatar } from "../Avatar/Avatar";
 
 type HeaderProps = {
-  currentDate: string;
   session: Session;
   avatar: string | null;
   theme: "dark" | "light";
@@ -13,7 +12,6 @@ type HeaderProps = {
 };
 
 export function Header({
-  // currentDate, // removed
   session,
   avatar,
   theme,
@@ -80,12 +78,14 @@ export function Header({
           )}
         </button>
         {/* Avatar + dropdown */}
-        <div style={{ position: "relative" }}>
+        <div className="header__avatar-wrapper">
           <button
+            type="button"
             className="header__avatar"
             onClick={() => setMenuOpen((o) => !o)}
+            title="User menu"
             aria-haspopup="true"
-            aria-expanded={menuOpen}
+            aria-expanded={menuOpen ? "true" : "false"}
           >
             <Avatar username={session.username} avatar={avatar} size="sm" />
           </button>
