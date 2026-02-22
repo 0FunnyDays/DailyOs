@@ -1,0 +1,46 @@
+/* App layout wrapper styles for Daily Os */
+@import "./colors.css";
+
+.page-renderer {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    /* Let the global page background/gradient show through */
+    background: transparent;
+    color: var(--clr-text);
+}
+
+.page-renderer__content {
+    flex: 1;
+    padding: 10px 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.page-renderer__section {
+    background: color-mix(in srgb, var(--clr-surface) 78%, transparent);
+    border: 1px solid color-mix(in srgb, var(--clr-border) 60%, transparent);
+    border-radius: var(--glass-radius);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    box-shadow: none;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.page-renderer__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--clr-accent);
+    margin-bottom: 16px;
+}
+
+.page-renderer__subtitle {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--clr-text-muted);
+    margin-bottom: 12px;
+}

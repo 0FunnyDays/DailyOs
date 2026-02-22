@@ -39,9 +39,10 @@
     --clr-purple-soft: rgba(167, 139, 250, 0.12);
 
     /* ── Layout tokens ────────────────────────────────────── */
-    --sidebar-w: 280px;
+    --sidebar-w: 224px;
     --sidebar-coll-w: 72px;
-    --sidebar-trans: width 0.22s ease;
+    --sidebar-trans: width 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+        min-width 0.75s cubic-bezier(0.22, 1, 0.36, 1);
 
     /* ── Glass tokens ─────────────────────────────────────── */
     --glass-blur: 16px;

@@ -1,3 +1,5 @@
+import { useId } from 'react';
+
 export type DateRangePreset = '7d' | '30d' | '3m' | '1y' | 'all';
 
 export type DateRange = {
@@ -21,6 +23,9 @@ const PRESETS: { key: DateRangePreset; label: string }[] = [
 ];
 
 export function DateRangePicker({ value, onChange, activePreset, onPresetChange }: DateRangePickerProps) {
+  const fromInputId = useId();
+  const toInputId = useId();
+
   return (
     <div className="date-picker">
       <div className="date-picker__presets">
@@ -36,8 +41,9 @@ export function DateRangePicker({ value, onChange, activePreset, onPresetChange 
         ))}
       </div>
       <div className="date-picker__custom">
-        <span className="date-picker__label">From</span>
+        <label className="date-picker__label" htmlFor={fromInputId}>From</label>
         <input
+          id={fromInputId}
           type="date"
           className="date-picker__input"
           value={value.from}
@@ -46,8 +52,9 @@ export function DateRangePicker({ value, onChange, activePreset, onPresetChange 
             onChange({ from: e.target.value, to: value.to });
           }}
         />
-        <span className="date-picker__label">To</span>
+        <label className="date-picker__label" htmlFor={toInputId}>To</label>
         <input
+          id={toInputId}
           type="date"
           className="date-picker__input"
           value={value.to}

@@ -1,0 +1,10 @@
+.work-settings__reset-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.work-settings__reset-suffix {
+  color: var(--clr-text-muted);
+  font-size: 13px;
+}

@@ -1,0 +1,19 @@
+.gym-settings__day-label {
+  margin-bottom: 0;
+  min-width: 56px;
+}
+
+.gym-settings__day-name-input {
+  font-weight: 600;
+}
+
+.gym-settings__remove-btn {
+  color: var(--clr-red);
+  padding: 4px 8px;
+}
+
+.gym-settings__add-exercise-btn {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--clr-accent);
+}

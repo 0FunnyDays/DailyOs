@@ -2,13 +2,11 @@ import "./index.css";
 import "./styles/colors.css";
 import "./styles/HomePage.css";
 import "./styles/Header.css";
-import "./styles/PageRenderer.css";
-import "./styles/LandingPage.css";
+import "./styles/AppLayout.css";
 import "./styles/Footer.css";
 import "./styles/LoginPage.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./styles/Sidebar.css";
 
 import App from "./App.tsx";
 

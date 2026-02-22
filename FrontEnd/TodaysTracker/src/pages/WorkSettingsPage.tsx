@@ -1,4 +1,5 @@
 import type { AppSettings } from '../types';
+import '../styles/WorkSettingsPage.css';
 
 type WorkSettingsPageProps = {
   settings: AppSettings;
@@ -61,7 +62,7 @@ export function WorkSettingsPage({ settings, onUpdateSettings }: WorkSettingsPag
             <label className="settings-form__label" htmlFor="sf-reset">
               Day resets at
             </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div className="work-settings__reset-row">
               <input
                 id="sf-reset"
                 type="number"
@@ -74,7 +75,7 @@ export function WorkSettingsPage({ settings, onUpdateSettings }: WorkSettingsPag
                 }}
                 className="field__input settings-form__input--sm"
               />
-              <span style={{ color: 'var(--clr-text-muted)', fontSize: '13px' }}>:00</span>
+              <span className="work-settings__reset-suffix">:00</span>
             </div>
             <p className="sidebar__setting-desc">New day starts at this hour (default 4 AM)</p>
           </div>

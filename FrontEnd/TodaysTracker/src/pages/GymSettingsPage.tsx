@@ -1,5 +1,6 @@
 import type { GymProgram, ProgramType, ExerciseTemplate } from '../types';
 import { generateId } from '../utils/idUtils';
+import '../styles/GymSettingsPage.css';
 
 type GymSettingsPageProps = {
   gymProgram: GymProgram | null;
@@ -169,7 +170,7 @@ export function GymSettingsPage({ gymProgram, onUpdateGymProgram }: GymSettingsP
                 {gymProgram.days.map((day, di) => (
                   <div key={day.id} className="program-day">
                     <div className="program-day__header">
-                      <span className="settings-form__label" style={{ marginBottom: 0, minWidth: 56 }}>
+                      <span className="settings-form__label gym-settings__day-label">
                         Day {di + 1}
                       </span>
                       <input
@@ -177,8 +178,7 @@ export function GymSettingsPage({ gymProgram, onUpdateGymProgram }: GymSettingsP
                         value={day.name}
                         placeholder={`Day ${di + 1}`}
                         onChange={(e) => updateDayName(day.id, e.target.value)}
-                        className="program-exercise-row__input"
-                        style={{ fontWeight: 600 }}
+                        className="program-exercise-row__input gym-settings__day-name-input"
                       />
                     </div>
 
@@ -207,8 +207,7 @@ export function GymSettingsPage({ gymProgram, onUpdateGymProgram }: GymSettingsP
                             </button>
                           </div>
                           <button
-                            className="btn btn--ghost"
-                            style={{ color: 'var(--clr-red)', padding: '4px 8px' }}
+                            className="btn btn--ghost gym-settings__remove-btn"
                             onClick={() => removeExercise(day.id, ex.id)}
                           >
                             ×
@@ -218,8 +217,7 @@ export function GymSettingsPage({ gymProgram, onUpdateGymProgram }: GymSettingsP
                     </div>
 
                     <button
-                      className="btn btn--ghost"
-                      style={{ marginTop: '8px', fontSize: '12px', color: 'var(--clr-accent)' }}
+                      className="btn btn--ghost gym-settings__add-exercise-btn"
                       onClick={() => addExercise(day.id)}
                     >
                       + Add exercise

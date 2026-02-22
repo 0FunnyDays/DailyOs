@@ -19,11 +19,144 @@ function dateAgo(daysBack: number): string {
 function sid(n: number): string { return `seed-s-${String(n).padStart(3, '0')}`; }
 function eid(n: number): string { return `seed-e-${String(n).padStart(3, '0')}`; }
 
+function seedGymSessions(): void {
+  const GYM_KEY = `todaystracker_gym_sessions_${TEST_USER_ID}`;
+  if (localStorage.getItem(GYM_KEY)) return; // already seeded
+
+  const gymSessions: Record<string, unknown> = {};
+
+  const gymEntries: Array<{
+    ago: number;
+    dayTemplateId: string;
+    dayName: string;
+    exercises: Array<{
+      name: string;
+      type: 'strength' | 'cardio';
+      sets: Array<[number, number]>;
+    }>;
+    note?: string;
+  }> = [
+    {
+      ago: 1, dayTemplateId: 'tpl-push', dayName: 'Push',
+      exercises: [
+        { name: 'Bench Press',      type: 'strength', sets: [[10, 70], [8, 80], [6, 85], [6, 85]] },
+        { name: 'Overhead Press',   type: 'strength', sets: [[10, 40], [8, 45], [8, 45]] },
+        { name: 'Incline Dumbbell', type: 'strength', sets: [[12, 24], [10, 26], [10, 26]] },
+        { name: 'Lateral Raises',   type: 'strength', sets: [[15, 10], [12, 12], [12, 12]] },
+        { name: 'Tricep Pushdown',  type: 'strength', sets: [[12, 25], [10, 30], [10, 30]] },
+      ],
+      note: 'Felt strong today, PR on bench!',
+    },
+    {
+      ago: 3, dayTemplateId: 'tpl-pull', dayName: 'Pull',
+      exercises: [
+        { name: 'Deadlift',     type: 'strength', sets: [[8, 100], [6, 120], [4, 130], [4, 130]] },
+        { name: 'Barbell Row',  type: 'strength', sets: [[10, 60], [8, 65], [8, 65]] },
+        { name: 'Lat Pulldown', type: 'strength', sets: [[12, 50], [10, 55], [10, 55]] },
+        { name: 'Face Pulls',   type: 'strength', sets: [[15, 15], [15, 15], [12, 17.5]] },
+        { name: 'Barbell Curl', type: 'strength', sets: [[12, 25], [10, 27.5], [10, 27.5]] },
+      ],
+    },
+    {
+      ago: 5, dayTemplateId: 'tpl-legs', dayName: 'Legs',
+      exercises: [
+        { name: 'Squat',             type: 'strength', sets: [[10, 80], [8, 90], [6, 100], [6, 100]] },
+        { name: 'Romanian Deadlift', type: 'strength', sets: [[10, 70], [8, 80], [8, 80]] },
+        { name: 'Leg Press',         type: 'strength', sets: [[12, 140], [10, 160], [10, 160]] },
+        { name: 'Leg Curl',          type: 'strength', sets: [[12, 35], [10, 40], [10, 40]] },
+        { name: 'Calf Raises',       type: 'strength', sets: [[15, 60], [15, 60], [12, 70]] },
+      ],
+      note: 'Heavy leg day, quads are destroyed.',
+    },
+    {
+      ago: 7, dayTemplateId: 'tpl-push', dayName: 'Push',
+      exercises: [
+        { name: 'Bench Press',     type: 'strength', sets: [[10, 65], [8, 75], [6, 80], [5, 82.5]] },
+        { name: 'Overhead Press',  type: 'strength', sets: [[10, 37.5], [8, 42.5], [7, 42.5]] },
+        { name: 'Cable Flyes',    type: 'strength', sets: [[12, 15], [12, 15], [10, 17.5]] },
+        { name: 'Lateral Raises', type: 'strength', sets: [[15, 10], [12, 10], [12, 12]] },
+        { name: 'Overhead Tricep', type: 'strength', sets: [[12, 20], [10, 22.5], [10, 22.5]] },
+      ],
+    },
+    {
+      ago: 8, dayTemplateId: 'tpl-pull', dayName: 'Pull',
+      exercises: [
+        { name: 'Deadlift',     type: 'strength', sets: [[8, 95], [6, 110], [5, 125], [4, 125]] },
+        { name: 'Barbell Row',  type: 'strength', sets: [[10, 55], [8, 60], [8, 60]] },
+        { name: 'Lat Pulldown', type: 'strength', sets: [[12, 45], [10, 50], [10, 50]] },
+        { name: 'Face Pulls',   type: 'strength', sets: [[15, 12.5], [15, 12.5], [12, 15]] },
+        { name: 'Hammer Curl',  type: 'strength', sets: [[12, 12], [10, 14], [10, 14]] },
+      ],
+      note: 'Back felt tight, took it easy on deadlifts.',
+    },
+    {
+      ago: 10, dayTemplateId: 'tpl-legs', dayName: 'Legs',
+      exercises: [
+        { name: 'Squat',             type: 'strength', sets: [[10, 75], [8, 85], [6, 95], [6, 95]] },
+        { name: 'Romanian Deadlift', type: 'strength', sets: [[10, 65], [8, 75], [8, 75]] },
+        { name: 'Leg Press',         type: 'strength', sets: [[12, 130], [10, 150], [10, 150]] },
+        { name: 'Leg Extension',     type: 'strength', sets: [[12, 40], [10, 45], [10, 45]] },
+        { name: 'Calf Raises',       type: 'strength', sets: [[15, 55], [15, 55], [12, 65]] },
+      ],
+    },
+    {
+      ago: 12, dayTemplateId: 'tpl-push', dayName: 'Push',
+      exercises: [
+        { name: 'Bench Press',      type: 'strength', sets: [[10, 60], [8, 70], [6, 77.5]] },
+        { name: 'Overhead Press',   type: 'strength', sets: [[10, 35], [8, 40], [8, 40]] },
+        { name: 'Incline Dumbbell', type: 'strength', sets: [[12, 22], [10, 24], [10, 24]] },
+        { name: 'Tricep Pushdown',  type: 'strength', sets: [[12, 22.5], [10, 25], [10, 25]] },
+      ],
+    },
+    {
+      ago: 13, dayTemplateId: 'tpl-pull', dayName: 'Pull',
+      exercises: [
+        { name: 'Deadlift',     type: 'strength', sets: [[8, 90], [6, 105], [5, 120]] },
+        { name: 'Barbell Row',  type: 'strength', sets: [[10, 50], [8, 55], [8, 55]] },
+        { name: 'Lat Pulldown', type: 'strength', sets: [[12, 42.5], [10, 47.5], [10, 47.5]] },
+        { name: 'Barbell Curl', type: 'strength', sets: [[12, 22.5], [10, 25], [10, 25]] },
+      ],
+    },
+  ];
+
+  let gymExIdx = 1;
+  let gymSetIdx = 1;
+
+  for (const entry of gymEntries) {
+    const dateKey = dateAgo(entry.ago);
+    gymSessions[dateKey] = {
+      date: dateKey,
+      dayTemplateId: entry.dayTemplateId,
+      dayName: entry.dayName,
+      exercises: entry.exercises.map((ex) => ({
+        id:         `seed-gex-${String(gymExIdx++).padStart(3, '0')}`,
+        templateId: `seed-gtpl-${ex.name.toLowerCase().replace(/\s+/g, '-')}`,
+        name:       ex.name,
+        type:       ex.type,
+        sets:       ex.sets.map(([reps, weight]) => ({
+          id:     `seed-gs-${String(gymSetIdx++).padStart(3, '0')}`,
+          reps,
+          weight,
+        })),
+      })),
+      note: entry.note,
+    };
+  }
+
+  localStorage.setItem(GYM_KEY, JSON.stringify(gymSessions));
+}
+
 export function seedTestUser(): void {
   try {
     const stored = localStorage.getItem(USERS_KEY);
     const users = stored ? JSON.parse(stored) : [];
-    if (users.some((u: { id: string }) => u.id === TEST_USER_ID)) return;
+    const userExists = users.some((u: { id: string }) => u.id === TEST_USER_ID);
+
+    if (userExists) {
+      // User exists — just ensure gym data is seeded
+      seedGymSessions();
+      return;
+    }
 
     // ── User ──────────────────────────────────────────────────────────────────
     localStorage.setItem(USERS_KEY, JSON.stringify([...users, {
@@ -207,6 +340,8 @@ export function seedTestUser(): void {
     }
 
     localStorage.setItem(`todaystracker_days_${TEST_USER_ID}`, JSON.stringify(days));
+
+    seedGymSessions();
     console.info('[seed] Test account ready — username: test / password: test12');
   } catch {
     // Silently ignore storage errors

@@ -1,6 +1,7 @@
 import { useState, useRef, type FormEvent, type ChangeEvent } from 'react';
 import type { User } from '../types';
 import { Avatar } from '../components/Avatar/Avatar';
+import '../styles/ProfilePage.css';
 
 type ProfilePageProps = {
   user: User;
@@ -58,29 +59,31 @@ export function ProfilePage({ user, onUpdateAvatar, onUpdatePassword }: ProfileP
       <div className="page__content">
 
         {/* Avatar */}
-        <section className="section" style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <section className="section profile-page__avatar-section">
+          <div className="profile-page__avatar-row">
             <Avatar username={user.username} avatar={user.avatar} size="lg" />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <p style={{ fontWeight: 600, fontSize: '16px' }}>{user.username}</p>
+            <div className="profile-page__avatar-actions">
+              <p className="profile-page__username">{user.username}</p>
               <button className="btn btn--secondary" onClick={() => fileInputRef.current?.click()}>
                 Upload photo
               </button>
-              {avatarError && <p className="login-error" style={{ marginTop: 0 }}>{avatarError}</p>}
+              {avatarError && <p className="login-error profile-page__avatar-error">{avatarError}</p>}
             </div>
           </div>
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            style={{ display: 'none' }}
+            className="profile-page__file-input"
+            aria-label="Upload profile photo"
+            title="Upload profile photo"
             onChange={handleAvatarChange}
           />
         </section>
 
         {/* Change password */}
         <section className="section">
-          <h2 className="section__title" style={{ marginBottom: '14px' }}>Change Password</h2>
+          <h2 className="section__title profile-page__password-title">Change Password</h2>
           <form className="login-form" onSubmit={handlePasswordSubmit}>
             <label className="field">
               <span className="field__label">Current password</span>
@@ -99,7 +102,7 @@ export function ProfilePage({ user, onUpdateAvatar, onUpdatePassword }: ProfileP
             </label>
             {pwError && <p className="login-error">{pwError}</p>}
             {pwSuccess && (
-              <p style={{ color: 'var(--clr-green)', fontSize: '13px' }}>Password updated successfully.</p>
+              <p className="profile-page__success">Password updated successfully.</p>
             )}
             <button type="submit" className="btn btn--primary">Update password</button>
           </form>

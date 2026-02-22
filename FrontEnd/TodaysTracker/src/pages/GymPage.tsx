@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type ChangeEvent } from 'react';
 import type { GymProgram, GymDayTemplate, GymSession, ExerciseLog, SetEntry, Page } from '../types';
 import { generateId } from '../utils/idUtils';
+import '../styles/GymPage.css';
 
 type GymPageProps = {
   gymProgram: GymProgram | null;
@@ -110,7 +111,7 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
         </div>
         <div className="page__content">
           <div className="gym-empty">
-            <p style={{ marginBottom: '16px' }}>No program set up yet.</p>
+            <p className="gym-empty__message">No program set up yet.</p>
             <button className="btn btn--primary" onClick={() => onNavigate('settings')}>
               Go to Settings
             </button>
@@ -145,7 +146,7 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
         {session && (
           <>
             {session.exercises.length === 0 && (
-              <p style={{ color: 'var(--clr-text-muted)', fontSize: '13px', marginBottom: '16px' }}>
+              <p className="gym-empty__hint">
                 No exercises in this day. Add some in Settings.
               </p>
             )}
@@ -162,13 +163,14 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
                 <div className="gym-exercise__sets">
                   {ex.sets.map((set, idx) => (
                     <div key={set.id} className="gym-set">
-                      <span className="gym-set__unit" style={{ color: 'var(--clr-text-dim)', minWidth: '28px' }}>
+                      <span className="gym-set__unit gym-set__unit--index">
                         #{idx + 1}
                       </span>
                       <input
                         type="number"
                         min={0}
                         value={set.reps}
+                        aria-label={`${ex.name || 'Exercise'} set ${idx + 1} reps`}
                         onChange={(e) => updateSet(ex.id, set.id, 'reps', parseFloat(e.target.value) || 0)}
                         className="gym-set__input"
                       />
@@ -178,6 +180,7 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
                         min={0}
                         step={0.5}
                         value={set.weight}
+                        aria-label={`${ex.name || 'Exercise'} set ${idx + 1} weight in kilograms`}
                         onChange={(e) => updateSet(ex.id, set.id, 'weight', parseFloat(e.target.value) || 0)}
                         className="gym-set__input"
                       />
@@ -203,10 +206,11 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
             ))}
 
             {/* Note */}
-            <section className="day-note" style={{ marginTop: '16px' }}>
+            <section className="day-note gym-note">
               <textarea
                 className="day-note__textarea"
                 value={noteLocal}
+                aria-label="Session notes"
                 onChange={handleNoteChange}
                 placeholder="Session notes..."
                 rows={3}
@@ -216,7 +220,7 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
         )}
 
         {!session && (
-          <p className="gym-empty" style={{ paddingTop: '32px' }}>
+          <p className="gym-empty gym-empty--spaced">
             Select a training day above to start logging.
           </p>
         )}

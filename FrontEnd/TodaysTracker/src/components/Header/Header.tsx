@@ -1,37 +1,106 @@
-import { useState } from "react";
-import type { Session } from "../../types";
+import { useEffect, useRef, useState } from "react";
+import type { Page, Session } from "../../types";
 import { Avatar } from "../Avatar/Avatar";
 
 type HeaderProps = {
+  currentPage: Page;
+  onNavigate: (page: Page) => void;
   session: Session;
   avatar: string | null;
   theme: "dark" | "light";
   onToggleTheme: () => void;
-  onNavigate: (page: "profile" | "settings") => void;
   onLogout: () => void;
 };
 
+const MAIN_NAV_ITEMS: Array<{ page: Page; label: string }> = [
+  { page: "home", label: "Home" },
+  { page: "today", label: "Work" },
+  { page: "dashboard", label: "Dashboard" },
+  { page: "gym", label: "Gym" },
+];
+
+const SETTINGS_PAGES: Page[] = ["settings", "settings-work", "settings-gym"];
+
 export function Header({
+  currentPage,
+  onNavigate,
   session,
   avatar,
   theme,
   onToggleTheme,
-  onNavigate,
   onLogout,
 }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const isOnSettingsPage = SETTINGS_PAGES.includes(currentPage);
 
-  function navigate(page: "profile" | "settings") {
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+
+      if (menuOpen && !userMenuRef.current?.contains(target)) {
+        setMenuOpen(false);
+      }
+    }
+
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => window.removeEventListener("pointerdown", onPointerDown);
+  }, [menuOpen]);
+
+  function navigate(page: Page) {
     setMenuOpen(false);
     onNavigate(page);
   }
 
   return (
-    <header className="header">
-      <div className="header__left">{/* Date removed */}</div>
-      <div className="header__right">
-        {/* Theme toggle */}
+    <nav className="header-nav" aria-label="Primary navigation">
+      <div className="header-nav__brand-shell">
         <button
+          type="button"
+          className="header-nav__nav-item header-nav__brand"
+          onClick={() => navigate("home")}
+          title="Go to Home"
+        >
+          Daily Os
+        </button>
+      </div>
+
+      <div className="header-nav__nav" aria-label="Navigation">
+        {MAIN_NAV_ITEMS.map((item) => (
+          <button
+            key={item.page}
+            type="button"
+            className={`header-nav__nav-item${
+              currentPage === item.page ? " header-nav__nav-item--active" : ""
+            }`}
+            onClick={() => navigate(item.page)}
+            aria-current={currentPage === item.page ? "page" : undefined}
+          >
+            <span className="header-nav__nav-label">{item.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="header-nav__settings-shell">
+        <button
+          type="button"
+          className={`header-nav__nav-item header-nav__settings-btn${
+            isOnSettingsPage ? " header-nav__nav-item--active" : ""
+          }`}
+          onClick={() => navigate("settings")}
+          aria-current={isOnSettingsPage ? "page" : undefined}
+          title="Settings"
+        >
+          <span className="header-nav__nav-label">Settings</span>
+        </button>
+      </div>
+
+      <div className="header__right header-nav__tools">
+        <button
+          type="button"
           className="header__theme-toggle"
           onClick={onToggleTheme}
           title={
@@ -77,38 +146,44 @@ export function Header({
             </svg>
           )}
         </button>
-        {/* Avatar + dropdown */}
-        <div className="header__avatar-wrapper">
+        <div ref={userMenuRef} className="header__avatar-wrapper">
           <button
             type="button"
             className="header__avatar"
-            onClick={() => setMenuOpen((o) => !o)}
+            onClick={() => setMenuOpen((open) => !open)}
             title="User menu"
-            aria-haspopup="true"
-            aria-expanded={menuOpen ? "true" : "false"}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
           >
             <Avatar username={session.username} avatar={avatar} size="sm" />
           </button>
+
           {menuOpen && (
-            <div className="user-menu" onMouseLeave={() => setMenuOpen(false)}>
+            <div className="user-menu" role="menu">
               <button
+                type="button"
                 className="user-menu__item"
                 onClick={() => navigate("profile")}
+                role="menuitem"
               >
                 Profile
               </button>
               <button
+                type="button"
                 className="user-menu__item"
                 onClick={() => navigate("settings")}
+                role="menuitem"
               >
                 Settings
               </button>
               <button
+                type="button"
                 className="user-menu__item user-menu__item--danger"
                 onClick={() => {
                   setMenuOpen(false);
                   onLogout();
                 }}
+                role="menuitem"
               >
                 Logout
               </button>
@@ -116,6 +191,6 @@ export function Header({
           )}
         </div>
       </div>
-    </header>
+    </nav>
   );
 }

@@ -7,14 +7,29 @@ import { useGymData } from "./hooks/useGymData";
 import { useCurrentDay } from "./hooks/useCurrentDay";
 import { applyTheme, getSavedTheme } from "./utils/themeUtils";
 
-import { Sidebar } from "./components/Sidebar/Sidebar";
 import { Header } from "./components/Header/Header";
 import { Footer } from "./components/Footer/Footer";
+import { DayView } from "./components/DayView/DayView";
 
-import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
+import { HomePage } from "./pages/HomePage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { WorkSettingsPage } from "./pages/WorkSettingsPage";
+import { GymSettingsPage } from "./pages/GymSettingsPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { GymPage } from "./pages/GymPage";
 
-import { PageRenderer } from "./components/PageRenderer/PageRenderer";
+const VALID_PAGES: Page[] = [
+  "home",
+  "today",
+  "dashboard",
+  "settings",
+  "settings-work",
+  "settings-gym",
+  "profile",
+  "gym",
+];
 
 // Root component — handles auth guard + landing vs login
 function App() {
@@ -28,24 +43,13 @@ function App() {
     updatePassword,
   } = useAuth();
 
-  const [showLogin, setShowLogin] = useState(false);
-
   // Apply saved theme on mount (covers landing/login pages)
   useEffect(() => {
     applyTheme(getSavedTheme());
   }, []);
 
   if (!session) {
-    if (showLogin) {
-      return (
-        <LoginPage
-          onRegister={register}
-          onLogin={login}
-          onBack={() => setShowLogin(false)}
-        />
-      );
-    }
-    return <LandingPage onGetStarted={() => setShowLogin(true)} />;
+    return <LoginPage onRegister={register} onLogin={login} />;
   }
 
   return (
@@ -96,20 +100,8 @@ function AuthenticatedApp({
     useGymData(session.userId);
 
   const currentDate = useCurrentDay(settings);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // ── Hash-based page routing ───────────────────────────────────────────────
-  const VALID_PAGES: Page[] = [
-    "home",
-    "today",
-    "dashboard",
-    "settings",
-    "settings-work",
-    "settings-gym",
-    "profile",
-    "gym",
-  ];
-
   const readHashPage = useCallback((): Page => {
     const hash = window.location.hash.replace("#", "");
     return VALID_PAGES.includes(hash as Page) ? (hash as Page) : "home";
@@ -146,60 +138,110 @@ function AuthenticatedApp({
 
   return (
     <div className="app">
-      <Sidebar
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen((o) => !o)}
-        currentPage={page}
-        onNavigate={navigate}
-      />
-
-      <div className="app-content">
-        <Header
-          session={session}
-          avatar={currentUser?.avatar ?? null}
-          theme={settings.theme}
-          onToggleTheme={() =>
-            updateSettings({
-              theme: settings.theme === "dark" ? "light" : "dark",
-            })
-          }
-          onNavigate={(p) => navigate(p)}
-          onLogout={onLogout}
-        />
-
-        <main className="main">
-          <div className="main-inner">
-            <PageRenderer
-              page={page}
+      <div className="app-shell">
+        <div className="app-content">
+          <div className="app-topbar">
+            <Header
+              currentPage={page}
+              onNavigate={navigate}
               session={session}
-              currentDay={currentDay}
-              currentDate={currentDate}
-              days={days}
-              settings={settings}
-              gymProgram={gymProgram}
-              gymSessions={gymSessions}
-              currentUser={currentUser}
-              navigate={navigate}
-              addShift={addShift}
-              updateShift={updateShift}
-              removeShift={removeShift}
-              addExpense={addExpense}
-              updateExpense={updateExpense}
-              removeExpense={removeExpense}
-              updateDayNote={updateDayNote}
-              updateSettings={updateSettings}
-              updateGymProgram={updateGymProgram}
-              upsertGymSession={(payload) => {
-                // payload should have date and session properties
-                upsertGymSession(payload.date, payload.session);
-              }}
-              onUpdateAvatar={onUpdateAvatar}
-              onUpdatePassword={onUpdatePassword}
+              avatar={currentUser?.avatar ?? null}
+              theme={settings.theme}
+              onToggleTheme={() =>
+                updateSettings({
+                  theme: settings.theme === "dark" ? "light" : "dark",
+                })
+              }
+              onLogout={onLogout}
             />
           </div>
-        </main>
 
-        <Footer />
+          <main className="main">
+            <div className="main-inner">
+              <div className="page-renderer">
+                <div className="page-renderer__content">
+                  {(() => {
+                    switch (page) {
+                      case "home":
+                        return (
+                          <HomePage
+                            session={session}
+                            currentDay={currentDay}
+                            settings={settings}
+                            onNavigate={navigate}
+                          />
+                        );
+                      case "dashboard":
+                        return (
+                          <DashboardPage
+                            days={days}
+                            settings={settings}
+                            gymSessions={gymSessions}
+                          />
+                        );
+                      case "settings":
+                        return <SettingsPage onNavigate={navigate} />;
+                      case "settings-work":
+                        return (
+                          <WorkSettingsPage
+                            settings={settings}
+                            onUpdateSettings={updateSettings}
+                          />
+                        );
+                      case "settings-gym":
+                        return (
+                          <GymSettingsPage
+                            gymProgram={gymProgram}
+                            onUpdateGymProgram={updateGymProgram}
+                          />
+                        );
+                      case "profile":
+                        return currentUser ? (
+                          <ProfilePage
+                            user={currentUser}
+                            onUpdateAvatar={onUpdateAvatar}
+                            onUpdatePassword={onUpdatePassword}
+                          />
+                        ) : null;
+                      case "gym":
+                        return (
+                          <GymPage
+                            gymProgram={gymProgram}
+                            gymSessions={gymSessions}
+                            currentDate={currentDate}
+                            onUpsertSession={upsertGymSession}
+                            onNavigate={navigate}
+                          />
+                        );
+                      default:
+                        return (
+                          <DayView
+                            day={currentDay}
+                            settings={settings}
+                            onAddShift={() => addShift(currentDate)}
+                            onUpdateShift={(id, updates) =>
+                              updateShift(currentDate, id, updates)
+                            }
+                            onRemoveShift={(id) => removeShift(currentDate, id)}
+                            onAddExpense={() => addExpense(currentDate)}
+                            onUpdateExpense={(id, updates) =>
+                              updateExpense(currentDate, id, updates)
+                            }
+                            onRemoveExpense={(id) => removeExpense(currentDate, id)}
+                            onUpdateNote={(note) =>
+                              updateDayNote(currentDate, note)
+                            }
+                          />
+                        );
+                    }
+                  })()}
+                </div>
+              </div>
+            </div>
+          </main>
+
+          <Footer />
+        </div>
       </div>
     </div>
   );

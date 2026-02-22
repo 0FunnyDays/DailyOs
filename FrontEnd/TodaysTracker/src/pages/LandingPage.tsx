@@ -10,8 +10,8 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
     <div className="landing">
       {/* Hero */}
       <header className="landing__hero">
-        <img src={logoSrc} alt="TodaysTracker" className="landing__logo" />
-        <h1 className="landing__title">TodaysTracker</h1>
+        <img src={logoSrc} alt="Daily Os" className="landing__logo" />
+        <h1 className="landing__title">Daily Os</h1>
         <p className="landing__subtitle">
           Track your shifts, earnings &amp; expenses — all in one place.
         </p>

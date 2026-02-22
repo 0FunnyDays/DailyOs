@@ -1,0 +1,22 @@
+.gym-empty__message {
+  margin-bottom: 16px;
+}
+
+.gym-empty__hint {
+  color: var(--clr-text-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.gym-set__unit--index {
+  color: var(--clr-text-dim);
+  min-width: 28px;
+}
+
+.gym-note {
+  margin-top: 16px;
+}
+
+.gym-empty--spaced {
+  padding-top: 32px;
+}
