@@ -401,11 +401,13 @@
     .header-nav {
         gap: 8px;
         flex-wrap: wrap;
+        align-items: center;
     }
 
     .header-nav__brand-shell {
         margin-right: 0;
         order: 1;
+        min-width: 0;
     }
 
     .header-nav__nav {
@@ -426,17 +428,86 @@
 }
 
 @media (max-width: 640px) {
+    .header-nav {
+        gap: 6px;
+    }
+
+    .header-nav__brand-shell {
+        flex: 1 1 auto;
+        min-width: 0;
+        order: 1;
+        margin-right: auto;
+    }
+
     .header-nav__nav-item {
         padding: 0 11px;
     }
 
     .header-nav__brand {
+        width: auto;
         padding-inline: 13px;
         font-size: 0.92rem;
     }
 
     .header__right {
+        order: 1;
         gap: 6px;
+        margin-left: auto;
+    }
+
+    .header-nav__settings-shell {
+        order: 1;
+        min-width: 0;
+        flex: 0 0 auto;
+        padding: 3px;
+    }
+
+    .header-nav__settings-btn {
+        width: auto;
+        min-width: 0;
+        justify-content: center;
+        padding-inline: 10px;
+        gap: 4px;
+    }
+
+    .header-nav__settings-menu {
+        left: auto;
+        right: 0;
+        min-width: 180px;
+        top: calc(100% + 6px);
+    }
+
+    .header-nav__nav {
+        order: 3;
+        width: 100%;
+        flex: 1 1 100%;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-nav__nav-item {
+        height: 30px;
+        padding: 0 10px;
+    }
+
+    .header-nav__settings-btn {
+        padding-inline: 8px;
+    }
+
+    .header-nav__settings-chevron {
+        width: 12px;
+        height: 12px;
+    }
+
+    .header-nav__brand {
+        font-size: 0.9rem;
+        padding-inline: 12px;
+    }
+
+    .header__right {
+        gap: 5px;
     }
 }
 
