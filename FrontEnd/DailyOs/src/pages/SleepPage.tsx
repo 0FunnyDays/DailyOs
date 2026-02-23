@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import type { DayData, Page } from "../types";
+import { PageGuideModal, usePageGuide } from "../components/PageGuideModal/PageGuideModal";
 
 type SleepMetaUpdates = Partial<
   Pick<DayData, "sleepHours" | "sleepQuality" | "energyLevel" | "recoveryNote">
 >;
 
 type SleepPageProps = {
+  userId: string;
   currentDate: string;
   days: Record<string, DayData>;
   onUpdateDayMeta: (date: string, updates: SleepMetaUpdates) => void;
@@ -123,7 +125,27 @@ function getEnergyLabel(level: DayData["energyLevel"]): string {
   }
 }
 
-export function SleepPage({ currentDate, days, onUpdateDayMeta, onNavigate }: SleepPageProps) {
+const SLEEP_GUIDE_STEPS = [
+  {
+    title: "Log sleep hours",
+    text: "Enter how many hours you slept — type a number, use the quick-pick buttons, or enter time format like 7:30.",
+  },
+  {
+    title: "Rate quality & energy",
+    text: "Tap a 1-5 score for sleep quality and energy level. This builds your trends over time.",
+  },
+  {
+    title: "Recovery note",
+    text: "Optional short note about stress, naps, meal timing, or anything that affected your recovery.",
+  },
+  {
+    title: "Track trends",
+    text: "The analytics section shows 7-day and 30-day averages, streaks, and a 14-day sleep trend chart.",
+  },
+];
+
+export function SleepPage({ userId, currentDate, days, onUpdateDayMeta, onNavigate }: SleepPageProps) {
+  const guide = usePageGuide(userId, "sleep");
   const [selectedDate, setSelectedDate] = useState(currentDate);
 
   const day: DayData = days[selectedDate] ?? {
@@ -295,8 +317,21 @@ export function SleepPage({ currentDate, days, onUpdateDayMeta, onNavigate }: Sl
 
   return (
     <section className="page-renderer__section">
+      <PageGuideModal
+        userId={userId}
+        pageKey="sleep"
+        title="Sleep / Recovery"
+        description="Log your sleep and recovery in a few taps. Track trends and see how sleep affects your energy."
+        steps={SLEEP_GUIDE_STEPS}
+        isOpen={guide.isOpen}
+        onClose={guide.dismiss}
+      />
       <div className="home__section-head">
         <h1 className="page-renderer__title" style={{ marginBottom: 0 }}>Sleep / Recovery</h1>
+        <button type="button" className="page-guide-trigger" onClick={guide.reopen}>
+          <span className="page-guide-trigger__icon" aria-hidden="true">?</span>
+          How it works
+        </button>
       </div>
 
       <p className="page-renderer__subtitle" style={{ marginBottom: 0 }}>

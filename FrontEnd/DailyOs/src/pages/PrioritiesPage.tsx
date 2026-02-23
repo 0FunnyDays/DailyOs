@@ -1,9 +1,11 @@
 import { useState } from "react";
 import type { DayData, Page } from "../types";
+import { PageGuideModal, usePageGuide } from "../components/PageGuideModal/PageGuideModal";
 
 type PrioritiesMetaUpdates = Partial<Pick<DayData, "focusTask" | "topPriorities" | "mustDo">>;
 
 type PrioritiesPageProps = {
+  userId: string;
   day: DayData;
   onUpdateDayMeta: (updates: PrioritiesMetaUpdates) => void;
   onNavigate: (page: Page) => void;
@@ -13,11 +15,28 @@ function hasText(value: string | undefined | null): boolean {
   return Boolean(value && value.trim());
 }
 
+const PRIORITIES_GUIDE_STEPS = [
+  {
+    title: "Main task",
+    text: "Pick the one thing that matters most today. This keeps your focus sharp when distractions pile up.",
+  },
+  {
+    title: "Top 3 priorities",
+    text: "Add up to three priorities for the day. These sit below your main task and help you stay on track.",
+  },
+  {
+    title: "Non-negotiable",
+    text: "\"If nothing else, do this\" — your fallback task. Even on a bad day, this one gets done.",
+  },
+];
+
 export function PrioritiesPage({
+  userId,
   day,
   onUpdateDayMeta,
   onNavigate,
 }: PrioritiesPageProps) {
+  const guide = usePageGuide(userId, "priorities");
   const [newPriorityName, setNewPriorityName] = useState("");
   const focusTask = day.focusTask ?? "";
   const mustDo = day.mustDo ?? "";
@@ -58,9 +77,24 @@ export function PrioritiesPage({
 
   return (
     <section className="page-renderer__section">
+      <PageGuideModal
+        userId={userId}
+        pageKey="priorities"
+        title="Priorities"
+        description="Set the day before it gets noisy: one main focus, top three priorities, and one non-negotiable."
+        steps={PRIORITIES_GUIDE_STEPS}
+        isOpen={guide.isOpen}
+        onClose={guide.dismiss}
+      />
       <div className="home__section-head">
         <h1 className="page-renderer__title" style={{ marginBottom: 0 }}>Priorities</h1>
-        <span className="home__section-kicker">{day.date}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span className="home__section-kicker">{day.date}</span>
+          <button type="button" className="page-guide-trigger" onClick={guide.reopen}>
+            <span className="page-guide-trigger__icon" aria-hidden="true">?</span>
+            How it works
+          </button>
+        </div>
       </div>
 
       <p className="page-renderer__subtitle" style={{ marginBottom: 0 }}>

@@ -8,6 +8,7 @@ import "./styles/AppLayout.css";
 import "./styles/Footer.css";
 import "./styles/LoginPage.css";
 import "./styles/LandingPage.css";
+import "./styles/PageGuideModal.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 

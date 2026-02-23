@@ -11,6 +11,7 @@ import {
   PUSH_STRENGTH_EXERCISE_OPTIONS,
   PULL_STRENGTH_EXERCISE_OPTIONS,
   LEGS_STRENGTH_EXERCISE_OPTIONS,
+  DEFAULT_EXERCISES_BY_PROGRAM,
 } from '../data/gymExerciseOptions';
 import '../styles/GymSettingsPage.css';
 
@@ -80,6 +81,10 @@ export function GymSettingsPage({ gymProgram, onUpdateGymProgram }: GymSettingsP
   const [daysPerWeekInput, setDaysPerWeekInput] = useState(
     gymProgram ? String(gymProgram.daysPerWeek) : '',
   );
+  const [activeExerciseSuggestions, setActiveExerciseSuggestions] = useState<{
+    dayId: string;
+    exId: string;
+  } | null>(null);
 
   useEffect(() => {
     setDaysPerWeekInput(gymProgram ? String(gymProgram.daysPerWeek) : '');
@@ -87,27 +92,30 @@ export function GymSettingsPage({ gymProgram, onUpdateGymProgram }: GymSettingsP
 
   function selectProgramType(type: ProgramType) {
     const dayNames = DEFAULT_DAYS[type];
+    const defaultExercises = DEFAULT_EXERCISES_BY_PROGRAM[type] ?? {};
+    const buildDays = () =>
+      dayNames.map((name) => ({
+        id: generateId(),
+        name,
+        exercises: (defaultExercises[name] ?? []).map((ex) => ({
+          id: generateId(),
+          name: ex.name,
+          type: ex.type as ExerciseTemplate['type'],
+        })),
+      }));
+
     if (!gymProgram) {
       onUpdateGymProgram({
         programType: type,
         daysPerWeek: dayNames.length,
-        days: dayNames.map((name) => ({
-          id: generateId(),
-          name,
-          exercises: [],
-        })),
+        days: buildDays(),
       });
     } else {
-      // Switching type: rebuild days with new defaults
       onUpdateGymProgram({
         ...gymProgram,
         programType: type,
         daysPerWeek: dayNames.length,
-        days: dayNames.map((name) => ({
-          id: generateId(),
-          name,
-          exercises: [],
-        })),
+        days: buildDays(),
       });
     }
   }
@@ -196,6 +204,10 @@ export function GymSettingsPage({ gymProgram, onUpdateGymProgram }: GymSettingsP
     });
   }
 
+  function isActiveExerciseSuggestionTarget(dayId: string, exId: string): boolean {
+    return activeExerciseSuggestions?.dayId === dayId && activeExerciseSuggestions?.exId === exId;
+  }
+
   function getExerciseSuggestionsDatalistId(dayName: string, exType: ExerciseTemplate['type']): string {
     if (exType === 'cardio') return CARDIO_EXERCISES_DATALIST_ID;
 
@@ -228,6 +240,48 @@ export function GymSettingsPage({ gymProgram, onUpdateGymProgram }: GymSettingsP
     if (fallbackBroBucket === 'legs') return LEGS_STRENGTH_EXERCISES_DATALIST_ID;
 
     return STRENGTH_EXERCISES_DATALIST_ID;
+  }
+
+  function getExerciseSuggestions(dayName: string, exType: ExerciseTemplate['type']): string[] {
+    const sourceId = getExerciseSuggestionsDatalistId(dayName, exType);
+    switch (sourceId) {
+      case CARDIO_EXERCISES_DATALIST_ID:
+        return CARDIO_EXERCISE_OPTIONS;
+      case CHEST_STRENGTH_EXERCISES_DATALIST_ID:
+        return CHEST_STRENGTH_EXERCISE_OPTIONS;
+      case BACK_STRENGTH_EXERCISES_DATALIST_ID:
+        return BACK_STRENGTH_EXERCISE_OPTIONS;
+      case SHOULDERS_STRENGTH_EXERCISES_DATALIST_ID:
+        return SHOULDERS_STRENGTH_EXERCISE_OPTIONS;
+      case ARMS_STRENGTH_EXERCISES_DATALIST_ID:
+        return ARMS_STRENGTH_EXERCISE_OPTIONS;
+      case PUSH_STRENGTH_EXERCISES_DATALIST_ID:
+        return PUSH_STRENGTH_EXERCISE_OPTIONS;
+      case PULL_STRENGTH_EXERCISES_DATALIST_ID:
+        return PULL_STRENGTH_EXERCISE_OPTIONS;
+      case LEGS_STRENGTH_EXERCISES_DATALIST_ID:
+        return LEGS_STRENGTH_EXERCISE_OPTIONS;
+      case STRENGTH_EXERCISES_DATALIST_ID:
+      default:
+        return STRENGTH_EXERCISE_OPTIONS;
+    }
+  }
+
+  function getFilteredExerciseSuggestions(
+    dayName: string,
+    exType: ExerciseTemplate['type'],
+    query: string,
+  ): string[] {
+    const source = getExerciseSuggestions(dayName, exType);
+    const trimmed = query.trim().toLowerCase();
+
+    if (!trimmed) return source.slice(0, 10);
+
+    const startsWith = source.filter((name) => name.toLowerCase().startsWith(trimmed));
+    const includes = source.filter(
+      (name) => !name.toLowerCase().startsWith(trimmed) && name.toLowerCase().includes(trimmed),
+    );
+    return [...startsWith, ...includes].slice(0, 10);
   }
 
   function getExercisePlaceholder(dayName: string, exType: ExerciseTemplate['type']): string {
@@ -322,15 +376,56 @@ export function GymSettingsPage({ gymProgram, onUpdateGymProgram }: GymSettingsP
                     <div className="program-day__exercises">
                       {day.exercises.map((ex) => (
                         <div key={ex.id} className="program-exercise-row">
-                          <input
-                            type="text"
-                            value={ex.name}
-                            placeholder={getExercisePlaceholder(day.name, ex.type)}
-                            onChange={(e) => updateExerciseName(day.id, ex.id, e.target.value)}
-                            className="program-exercise-row__input"
-                            list={getExerciseSuggestionsDatalistId(day.name, ex.type)}
-                            autoComplete="off"
-                          />
+                          <div className="program-exercise-row__input-wrap">
+                            <input
+                              type="text"
+                              value={ex.name}
+                              placeholder={getExercisePlaceholder(day.name, ex.type)}
+                              onChange={(e) => updateExerciseName(day.id, ex.id, e.target.value)}
+                              onFocus={() => setActiveExerciseSuggestions({ dayId: day.id, exId: ex.id })}
+                              onBlur={() => {
+                                window.setTimeout(() => {
+                                  setActiveExerciseSuggestions((current) =>
+                                    current && current.dayId === day.id && current.exId === ex.id
+                                      ? null
+                                      : current,
+                                  );
+                                }, 120);
+                              }}
+                              className="program-exercise-row__input"
+                              autoComplete="off"
+                            />
+
+                            {isActiveExerciseSuggestionTarget(day.id, ex.id) && (
+                              <div className="program-exercise-suggestions" role="listbox" aria-label="Exercise suggestions">
+                                {getFilteredExerciseSuggestions(day.name, ex.type, ex.name).map((suggestion) => (
+                                  <button
+                                    key={`${ex.id}-${suggestion}`}
+                                    type="button"
+                                    className={`program-exercise-suggestions__item${
+                                      suggestion.toLowerCase() === ex.name.trim().toLowerCase()
+                                        ? ' program-exercise-suggestions__item--active'
+                                        : ''
+                                    }`}
+                                    onPointerDown={(event) => {
+                                      event.preventDefault();
+                                      updateExerciseName(day.id, ex.id, suggestion);
+                                      setActiveExerciseSuggestions({ dayId: day.id, exId: ex.id });
+                                    }}
+                                    role="option"
+                                    aria-selected={suggestion.toLowerCase() === ex.name.trim().toLowerCase()}
+                                  >
+                                    {suggestion}
+                                  </button>
+                                ))}
+                                {getFilteredExerciseSuggestions(day.name, ex.type, ex.name).length === 0 && (
+                                  <div className="program-exercise-suggestions__empty">
+                                    No suggestions
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
                           <div className="program-exercise-row__type">
                             <button
                               className={ex.type === 'strength' ? 'active' : ''}

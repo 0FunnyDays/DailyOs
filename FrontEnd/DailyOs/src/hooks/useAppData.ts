@@ -5,7 +5,7 @@ import { generateId } from '../utils/idUtils';
 const AVG_WEEKS_PER_MONTH = 52 / 12;
 
 const DEFAULT_SETTINGS: AppSettings = {
-  dayResetHour: 4,
+  dayResetHour: 0,
   currency: '€',
   monthlyFlatSalary: 0,
   workingDaysPerMonth: 22,

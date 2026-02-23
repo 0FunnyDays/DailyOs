@@ -172,6 +172,8 @@ type AuthenticatedAppProps = {
   ) => Promise<{ ok: boolean; error?: string }>;
 };
 
+type OnboardingSetupFlowStep = "work" | "gym";
+
 function AuthenticatedApp({
   session,
   users,
@@ -211,6 +213,12 @@ function AuthenticatedApp({
 
   const currentDate = useCurrentDay(settings);
   const [workPageDate, setWorkPageDate] = useState(currentDate);
+  const [homeOnboardingModalDismissed, setHomeOnboardingModalDismissed] =
+    useState(false);
+  const [onboardingSetupFlowStep, setOnboardingSetupFlowStep] =
+    useState<OnboardingSetupFlowStep | null>(null);
+  const [homeOnboardingModalInitialScreen, setHomeOnboardingModalInitialScreen] =
+    useState<OnboardingSetupFlowStep | null>(null);
   const previousLogicalDateRef = useRef(currentDate);
 
   useEffect(() => {
@@ -234,6 +242,34 @@ function AuthenticatedApp({
     window.location.hash = p;
   }, []);
 
+  const startOnboardingSetup = useCallback((
+    screen: OnboardingSetupFlowStep,
+    options?: { returnToModalScreen?: OnboardingSetupFlowStep },
+  ) => {
+    setHomeOnboardingModalDismissed(false);
+    setOnboardingSetupFlowStep(screen);
+    setHomeOnboardingModalInitialScreen(options?.returnToModalScreen ?? "gym");
+    navigate(screen === "work" ? "settings-work" : "settings-gym");
+  }, [navigate]);
+
+  const continueOnboardingFromSetup = useCallback(() => {
+    if (!onboardingSetupFlowStep) {
+      navigate("home");
+      return;
+    }
+
+    setHomeOnboardingModalDismissed(false);
+    setOnboardingSetupFlowStep(null);
+    navigate("home");
+  }, [navigate, onboardingSetupFlowStep]);
+
+  const skipGuidedOnboardingFromSetup = useCallback(() => {
+    setOnboardingSetupFlowStep(null);
+    setHomeOnboardingModalInitialScreen(null);
+    setHomeOnboardingModalDismissed(true);
+    navigate("home");
+  }, [navigate]);
+
   // Browser back/forward button support
   useEffect(() => {
     function onHashChange() {
@@ -248,11 +284,38 @@ function AuthenticatedApp({
     shifts: [],
     expenses: [],
   };
+  const hasAnyWorkEntries = Object.values(days).some(
+    (day) => day.shifts.length > 0 || day.expenses.length > 0,
+  );
+  const hasAnyGymEntries = Object.keys(gymSessions).length > 0;
   const selectedWorkDay: DayData = days[workPageDate] ?? {
     date: workPageDate,
     shifts: [],
     expenses: [],
   };
+
+  useEffect(() => {
+    if (!onboardingSetupFlowStep) return;
+
+    const targetPage = onboardingSetupFlowStep === "work"
+      ? "settings-work"
+      : "settings-gym";
+    if (page !== "home" && page !== targetPage) {
+      navigate(targetPage);
+    }
+  }, [navigate, onboardingSetupFlowStep, page]);
+
+  useEffect(() => {
+    if (hasAnyWorkEntries || hasAnyGymEntries) {
+      setOnboardingSetupFlowStep(null);
+      setHomeOnboardingModalInitialScreen(null);
+    }
+  }, [hasAnyGymEntries, hasAnyWorkEntries]);
+
+  const isOnboardingSetupTargetPage = onboardingSetupFlowStep !== null && (
+    (onboardingSetupFlowStep === "work" && (page === "settings-work" || page === "settings"))
+    || (onboardingSetupFlowStep === "gym" && page === "settings-gym")
+  );
 
   const currentUser = users.find((u) => u.id === session.userId) ?? null;
 
@@ -275,16 +338,64 @@ function AuthenticatedApp({
             <div className="main-inner">
               <div className="page-renderer">
                 <div className="page-renderer__content">
+                  {isOnboardingSetupTargetPage && onboardingSetupFlowStep && (
+                    <section
+                      className="page-renderer__onboarding-continue"
+                      aria-label="Onboarding continuation"
+                    >
+                      <div className="page-renderer__onboarding-continue-copy">
+                        <strong>
+                          {onboardingSetupFlowStep === "work"
+                            ? "Work setup step"
+                            : "Gym setup step"}
+                        </strong>
+                        <span>
+                          Make your changes here, then tap Back to setup guide to return to the
+                          onboarding modal.
+                        </span>
+                      </div>
+                      <div className="page-renderer__onboarding-continue-actions">
+                        <button
+                          type="button"
+                          className="home__next-step-btn"
+                          onClick={continueOnboardingFromSetup}
+                        >
+                          Back to setup guide
+                        </button>
+                        <button
+                          type="button"
+                          className="home__ghost-btn"
+                          onClick={skipGuidedOnboardingFromSetup}
+                        >
+                          Skip for now
+                        </button>
+                      </div>
+                    </section>
+                  )}
                   {(() => {
                     switch (page) {
                       case "home":
                         return (
                           <HomePage
+                            userId={session.userId}
                             currentDay={currentDay}
+                            hasAnyWorkEntries={hasAnyWorkEntries}
+                            onboardingModalDismissed={homeOnboardingModalDismissed}
                             settings={settings}
                             gymProgram={gymProgram}
                             gymSessions={gymSessions}
                             onNavigate={navigate}
+                            onStartOnboardingSetup={startOnboardingSetup}
+                            onboardingModalInitialScreen={homeOnboardingModalInitialScreen}
+                            onConsumeOnboardingModalInitialScreen={() =>
+                              setHomeOnboardingModalInitialScreen(null)
+                            }
+                            onUpdateSettings={updateSettings}
+                            onDismissOnboardingModal={() => {
+                              setHomeOnboardingModalDismissed(true);
+                              setOnboardingSetupFlowStep(null);
+                              setHomeOnboardingModalInitialScreen(null);
+                            }}
                             onUpdateDayMeta={(updates) =>
                               updateDayMeta(currentDate, updates)
                             }
@@ -299,6 +410,7 @@ function AuthenticatedApp({
                       case "dashboard":
                         return (
                           <DashboardPage
+                            userId={session.userId}
                             days={days}
                             settings={settings}
                             gymSessions={gymSessions}
@@ -307,6 +419,7 @@ function AuthenticatedApp({
                       case "priorities":
                         return (
                           <PrioritiesPage
+                            userId={session.userId}
                             day={currentDay}
                             onUpdateDayMeta={(updates) =>
                               updateDayMeta(currentDate, updates)
@@ -317,6 +430,7 @@ function AuthenticatedApp({
                       case "projects":
                         return (
                           <ProjectsPage
+                            userId={session.userId}
                             projects={projects}
                             currentDate={currentDate}
                             onAddProject={addProject}
@@ -338,6 +452,7 @@ function AuthenticatedApp({
                       case "sleep":
                         return (
                           <SleepPage
+                            userId={session.userId}
                             currentDate={currentDate}
                             days={days}
                             onUpdateDayMeta={updateDayMeta}
@@ -383,6 +498,7 @@ function AuthenticatedApp({
                       case "gym":
                         return (
                           <GymPage
+                            userId={session.userId}
                             gymProgram={gymProgram}
                             gymSessions={gymSessions}
                             currentDate={currentDate}

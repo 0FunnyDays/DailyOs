@@ -500,6 +500,165 @@ function isLegExercise(name: string): boolean {
   ]);
 }
 
+// ── Default exercises per program type / day ────────────────────────────
+
+type DefaultExercise = { name: string; type: 'strength' | 'cardio' };
+
+export const DEFAULT_EXERCISES_BY_PROGRAM: Record<string, Record<string, DefaultExercise[]>> = {
+  'push-pull-legs': {
+    'Push A': [
+      { name: 'Bench Press', type: 'strength' },
+      { name: 'Incline Dumbbell Press', type: 'strength' },
+      { name: 'Overhead Press', type: 'strength' },
+      { name: 'Cable Fly', type: 'strength' },
+      { name: 'Lateral Raise', type: 'strength' },
+      { name: 'Triceps Pushdown', type: 'strength' },
+    ],
+    'Pull A': [
+      { name: 'Barbell Row', type: 'strength' },
+      { name: 'Pull-Up', type: 'strength' },
+      { name: 'Seated Cable Row', type: 'strength' },
+      { name: 'Face Pull', type: 'strength' },
+      { name: 'Barbell Curl', type: 'strength' },
+      { name: 'Hammer Curl', type: 'strength' },
+    ],
+    'Legs A': [
+      { name: 'Back Squat', type: 'strength' },
+      { name: 'Romanian Deadlift', type: 'strength' },
+      { name: 'Leg Press', type: 'strength' },
+      { name: 'Leg Curl', type: 'strength' },
+      { name: 'Leg Extension', type: 'strength' },
+      { name: 'Standing Calf Raise', type: 'strength' },
+    ],
+    'Push B': [
+      { name: 'Incline Bench Press', type: 'strength' },
+      { name: 'Dumbbell Bench Press', type: 'strength' },
+      { name: 'Seated Dumbbell Shoulder Press', type: 'strength' },
+      { name: 'Pec Deck Fly', type: 'strength' },
+      { name: 'Cable Lateral Raise', type: 'strength' },
+      { name: 'Overhead Triceps Extension', type: 'strength' },
+    ],
+    'Pull B': [
+      { name: 'Deadlift', type: 'strength' },
+      { name: 'Lat Pulldown', type: 'strength' },
+      { name: 'Dumbbell Row', type: 'strength' },
+      { name: 'Rear Delt Fly', type: 'strength' },
+      { name: 'EZ Bar Curl', type: 'strength' },
+      { name: 'Incline Dumbbell Curl', type: 'strength' },
+    ],
+    'Legs B': [
+      { name: 'Front Squat', type: 'strength' },
+      { name: 'Hip Thrust', type: 'strength' },
+      { name: 'Bulgarian Split Squat', type: 'strength' },
+      { name: 'Seated Leg Curl', type: 'strength' },
+      { name: 'Leg Extension', type: 'strength' },
+      { name: 'Seated Calf Raise', type: 'strength' },
+    ],
+  },
+  'bro-split': {
+    'Chest': [
+      { name: 'Bench Press', type: 'strength' },
+      { name: 'Incline Dumbbell Press', type: 'strength' },
+      { name: 'Cable Fly', type: 'strength' },
+      { name: 'Pec Deck Fly', type: 'strength' },
+      { name: 'Dip', type: 'strength' },
+    ],
+    'Back': [
+      { name: 'Deadlift', type: 'strength' },
+      { name: 'Barbell Row', type: 'strength' },
+      { name: 'Lat Pulldown', type: 'strength' },
+      { name: 'Seated Cable Row', type: 'strength' },
+      { name: 'Face Pull', type: 'strength' },
+    ],
+    'Shoulders': [
+      { name: 'Overhead Press', type: 'strength' },
+      { name: 'Lateral Raise', type: 'strength' },
+      { name: 'Rear Delt Fly', type: 'strength' },
+      { name: 'Face Pull', type: 'strength' },
+      { name: 'Shrug', type: 'strength' },
+    ],
+    'Arms': [
+      { name: 'Barbell Curl', type: 'strength' },
+      { name: 'Hammer Curl', type: 'strength' },
+      { name: 'Preacher Curl', type: 'strength' },
+      { name: 'Triceps Pushdown', type: 'strength' },
+      { name: 'Skull Crusher', type: 'strength' },
+      { name: 'Overhead Triceps Extension', type: 'strength' },
+    ],
+    'Legs': [
+      { name: 'Back Squat', type: 'strength' },
+      { name: 'Romanian Deadlift', type: 'strength' },
+      { name: 'Leg Press', type: 'strength' },
+      { name: 'Leg Curl', type: 'strength' },
+      { name: 'Leg Extension', type: 'strength' },
+      { name: 'Standing Calf Raise', type: 'strength' },
+    ],
+  },
+  'full-body': {
+    'Full Body A': [
+      { name: 'Back Squat', type: 'strength' },
+      { name: 'Bench Press', type: 'strength' },
+      { name: 'Barbell Row', type: 'strength' },
+      { name: 'Overhead Press', type: 'strength' },
+      { name: 'Barbell Curl', type: 'strength' },
+    ],
+    'Full Body B': [
+      { name: 'Deadlift', type: 'strength' },
+      { name: 'Incline Dumbbell Press', type: 'strength' },
+      { name: 'Pull-Up', type: 'strength' },
+      { name: 'Lateral Raise', type: 'strength' },
+      { name: 'Triceps Pushdown', type: 'strength' },
+    ],
+    'Full Body C': [
+      { name: 'Front Squat', type: 'strength' },
+      { name: 'Dumbbell Bench Press', type: 'strength' },
+      { name: 'Seated Cable Row', type: 'strength' },
+      { name: 'Face Pull', type: 'strength' },
+      { name: 'Hammer Curl', type: 'strength' },
+    ],
+  },
+  'cardio': {
+    'Cardio A': [
+      { name: 'Running', type: 'cardio' },
+      { name: 'Jump Rope', type: 'cardio' },
+    ],
+    'Cardio B': [
+      { name: 'Cycling', type: 'cardio' },
+      { name: 'Rowing', type: 'cardio' },
+    ],
+    'Cardio C': [
+      { name: 'Swimming', type: 'cardio' },
+      { name: 'Stair Climber', type: 'cardio' },
+    ],
+  },
+  'calisthenics': {
+    'Push': [
+      { name: 'Push-Up', type: 'strength' },
+      { name: 'Dip', type: 'strength' },
+      { name: 'Deficit Push-Up', type: 'strength' },
+      { name: 'Close-Grip Push-Up', type: 'strength' },
+    ],
+    'Pull': [
+      { name: 'Pull-Up', type: 'strength' },
+      { name: 'Chin-Up', type: 'strength' },
+      { name: 'Inverted Row', type: 'strength' },
+      { name: 'Hanging Leg Raise', type: 'strength' },
+    ],
+    'Legs': [
+      { name: 'Pistol Squat', type: 'strength' },
+      { name: 'Bulgarian Split Squat', type: 'strength' },
+      { name: 'Walking Lunge', type: 'strength' },
+      { name: 'Nordic Curl', type: 'strength' },
+    ],
+    'Skills': [
+      { name: 'Ring Push-Up', type: 'strength' },
+      { name: 'Ring Row', type: 'strength' },
+      { name: 'Ab Wheel Rollout', type: 'strength' },
+      { name: 'Weighted Plank', type: 'strength' },
+    ],
+  },
+};
+
 export const STRENGTH_EXERCISE_OPTIONS = uniqueSorted(RAW_STRENGTH_EXERCISES);
 export const CARDIO_EXERCISE_OPTIONS = uniqueSorted(RAW_CARDIO_EXERCISES);
 export const CHEST_STRENGTH_EXERCISE_OPTIONS = uniqueSorted(RAW_STRENGTH_EXERCISES.filter(isChestExercise));

@@ -1,3 +1,4 @@
+﻿import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import type {
   AppSettings,
   DayData,
@@ -5,6 +6,7 @@ import type {
   GymSession,
   Page,
 } from "../types";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { calculateHours } from "../utils/dateUtils";
 import { calculateDayTotals } from "../utils/payUtils";
 
@@ -26,11 +28,22 @@ type DayMetaUpdates = Partial<
 >;
 
 type HomePageProps = {
+  userId: string;
   currentDay: DayData;
+  hasAnyWorkEntries: boolean;
+  onboardingModalDismissed: boolean;
   settings: AppSettings;
   gymProgram: GymProgram | null;
   gymSessions: Record<string, GymSession>;
   onNavigate: (page: Page) => void;
+  onStartOnboardingSetup?: (
+    screen: "work" | "gym",
+    options?: { returnToModalScreen?: "work" | "gym" },
+  ) => void;
+  onboardingModalInitialScreen?: "work" | "gym" | null;
+  onConsumeOnboardingModalInitialScreen?: () => void;
+  onUpdateSettings: (updates: Partial<AppSettings>) => void;
+  onDismissOnboardingModal: () => void;
   onUpdateDayMeta: (updates: DayMetaUpdates) => void;
 };
 
@@ -39,6 +52,9 @@ type MoodOption = {
   emoji: string;
   label: string;
 };
+
+type OnboardingModalState = "active" | "dismissed" | "completed";
+type OnboardingModalScreen = "work" | "gym";
 
 const MOOD_OPTIONS: MoodOption[] = [
   { value: "bad", emoji: "😕", label: "Low" },
@@ -77,6 +93,122 @@ function formatMoney(currency: string, amount: number, signed = false): string {
 
 function formatSleepHoursOption(hours: number): string {
   return Number.isInteger(hours) ? `${hours}h` : `${hours.toFixed(1)}h`;
+}
+
+function formatResetTimeInput(resetHour: number): string {
+  const safe = Number.isFinite(resetHour) ? resetHour : 0;
+  const totalMinutes = Math.min(23 * 60 + 59, Math.max(0, Math.round(safe * 60)));
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function parseResetTimeInput(value: string): number | null {
+  const match = /^(\d{2}):(\d{2})$/.exec(value.trim());
+  if (!match) return null;
+  const h = Number(match[1]);
+  const m = Number(match[2]);
+  if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+  return (h * 60 + m) / 60;
+}
+
+function sanitizeResetTimeDraft(value: string): string {
+  const filtered = value.replace(/[^\d:]/g, "");
+  let result = "";
+  let hasColon = false;
+
+  for (const char of filtered) {
+    if (/\d/.test(char)) {
+      result += char;
+      continue;
+    }
+    if (char === ":" && !hasColon) {
+      result += char;
+      hasColon = true;
+    }
+  }
+
+  if (hasColon) {
+    const [hours = "", minutes = ""] = result.split(":");
+    return `${hours.slice(0, 2)}:${minutes.slice(0, 2)}`;
+  }
+
+  const digitsOnly = result.slice(0, 4);
+  if (digitsOnly.length > 2) {
+    return `${digitsOnly.slice(0, 2)}:${digitsOnly.slice(2)}`;
+  }
+  return digitsOnly;
+}
+
+function OnboardingTime24Input({
+  id,
+  value,
+  onCommit,
+  className,
+  ariaLabel,
+}: {
+  id: string;
+  value: number;
+  onCommit: (next: number) => void;
+  className: string;
+  ariaLabel: string;
+}) {
+  const [raw, setRaw] = useState(formatResetTimeInput(value));
+  const isFocusedRef = useRef(false);
+
+  useEffect(() => {
+    if (isFocusedRef.current) return;
+    setRaw(formatResetTimeInput(value));
+  }, [value]);
+
+  function commit(nextRaw: string) {
+    const parsed = parseResetTimeInput(nextRaw);
+    if (parsed === null) {
+      setRaw(formatResetTimeInput(value));
+      return;
+    }
+    onCommit(parsed);
+    setRaw(formatResetTimeInput(parsed));
+  }
+
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const nextRaw = sanitizeResetTimeDraft(e.target.value);
+    setRaw(nextRaw);
+
+    if (nextRaw.length < 5) return;
+    const parsed = parseResetTimeInput(nextRaw);
+    if (parsed !== null) {
+      onCommit(parsed);
+    }
+  }
+
+  return (
+    <input
+      id={id}
+      type="text"
+      inputMode="numeric"
+      placeholder="00:00"
+      value={raw}
+      onFocus={(e) => {
+        isFocusedRef.current = true;
+        e.currentTarget.select();
+      }}
+      onChange={handleChange}
+      onBlur={(e) => {
+        isFocusedRef.current = false;
+        commit(e.target.value);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          commit(raw);
+          e.currentTarget.blur();
+        }
+      }}
+      className={className}
+      aria-label={ariaLabel}
+    />
+  );
 }
 
 function getSleepQualityLabel(level: DayData["sleepQuality"]): string {
@@ -145,11 +277,19 @@ function formatDisplayDate(dateKey: string): string {
 }
 
 export function HomePage({
+  userId,
   currentDay,
+  hasAnyWorkEntries,
+  onboardingModalDismissed,
   settings,
   gymProgram,
   gymSessions,
   onNavigate,
+  onStartOnboardingSetup,
+  onboardingModalInitialScreen,
+  onConsumeOnboardingModalInitialScreen,
+  onUpdateSettings,
+  onDismissOnboardingModal,
 }: HomePageProps) {
   const flatDailyPay = settings.monthlyFlatSalary / (settings.workingDaysPerMonth || 22);
   const totals = calculateDayTotals(currentDay, flatDailyPay);
@@ -274,12 +414,94 @@ export function HomePage({
   const gymStreak = computeGymStreak(gymSessions, currentDay.date);
   const gymLast7 = computeGymLast7(gymSessions, currentDay.date);
   const streakLabel = gymStreak === 1 ? "1 day" : `${gymStreak} days`;
+  const hasWorkSetup =
+    (settings.jobs?.length ?? 0) > 0 || settings.monthlyFlatSalary > 0;
+  const hasWorkActivityToday =
+    currentDay.shifts.length > 0 || currentDay.expenses.length > 0;
+  const hasAnyGymEntries = Object.keys(gymSessions).length > 0;
+  const hasGymProgramSetup = Boolean(gymProgram && gymProgram.days.length > 0);
+  const hasCoreOnboardingGoal = hasAnyWorkEntries || hasAnyGymEntries;
 
   const ringRadius = 18;
   const ringCirc = 2 * Math.PI * ringRadius;
   const ringOffset = ringCirc * (1 - habitsProgress);
 
+  const onboardingCoreTotal = 1;
+  const onboardingCoreDone = hasCoreOnboardingGoal ? 1 : 0;
+  const showOnboardingGuide = onboardingCoreDone < onboardingCoreTotal;
+  const hasOnboardingSaveSignal = hasCoreOnboardingGoal;
+  const [onboardingModalState, setOnboardingModalState] =
+    useLocalStorage<OnboardingModalState>(
+      `dailyos_home_onboarding_modal_${userId}`,
+      "active",
+    );
+  const [onboardingModalScreen, setOnboardingModalScreen] =
+    useState<OnboardingModalScreen>("work");
+  const wasOnboardingModalVisibleRef = useRef(false);
+  const onboardingWizardScreens = [
+    {
+      key: "work" as const,
+      label: "Work",
+      desc: "Shifts, expenses, reset time",
+      done: hasAnyWorkEntries,
+    },
+    {
+      key: "gym" as const,
+      label: "Gym",
+      desc: "Program and training logs",
+      done: hasAnyGymEntries,
+    },
+  ] as const;
+  const showOnboardingModal =
+    showOnboardingGuide
+    && onboardingModalState !== "completed"
+    && !hasOnboardingSaveSignal
+    && !onboardingModalDismissed;
+  const hasOnboardingSetupProgress =
+    hasWorkSetup || hasGymProgramSetup || settings.dayResetHour !== 0;
+  const onboardingDismissLabel = hasOnboardingSetupProgress
+    ? "Done for now"
+    : "I don't need this";
+
+  useEffect(() => {
+    if (onboardingModalState === "dismissed") {
+      setOnboardingModalState("active");
+    }
+  }, [onboardingModalState, setOnboardingModalState]);
+
+  useEffect(() => {
+    if (showOnboardingModal && !wasOnboardingModalVisibleRef.current) {
+      setOnboardingModalScreen(onboardingModalInitialScreen ?? "work");
+      onConsumeOnboardingModalInitialScreen?.();
+    }
+
+    wasOnboardingModalVisibleRef.current = showOnboardingModal;
+  }, [
+    onboardingModalInitialScreen,
+    onConsumeOnboardingModalInitialScreen,
+    showOnboardingModal,
+  ]);
+
+  useEffect(() => {
+    if (!showOnboardingGuide || hasOnboardingSaveSignal) {
+      setOnboardingModalState("completed");
+    }
+  }, [
+    hasOnboardingSaveSignal,
+    onboardingModalState,
+    setOnboardingModalState,
+    showOnboardingGuide,
+  ]);
+
   const nextAction = (() => {
+    if (!hasWorkSetup) {
+      return {
+        title: "Work Setup",
+        desc: "Add a job or monthly salary first so work logs and earnings make sense.",
+        cta: "Open Work Settings",
+        onClick: () => onNavigate("settings-work" as Page),
+      };
+    }
     if (!hasDailyFocus) {
       return {
         title: "Daily Focus",
@@ -288,7 +510,7 @@ export function HomePage({
         onClick: () => onNavigate("priorities"),
       };
     }
-    if (currentDay.shifts.length === 0 && currentDay.expenses.length === 0) {
+    if (!hasWorkActivityToday) {
       return {
         title: "Work Log",
         desc: "Start today by logging your first shift or expense.",
@@ -314,7 +536,234 @@ export function HomePage({
 
   return (
     <div className="home">
-      {/* ── Hero ─────────────────────────────────────────────── */}
+      {showOnboardingModal && (
+        <div className="home__onboarding-modal-backdrop" role="presentation">
+          <section
+            className="home__onboarding-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="home-onboarding-modal-title"
+          >
+            <div className="home__onboarding-modal-head">
+              <div className="home__onboarding-kicker">First-time setup</div>
+              <h2 id="home-onboarding-modal-title" className="home__onboarding-modal-title">
+                Pick what you want to set up first.
+              </h2>
+              <p className="home__onboarding-modal-desc">
+                Quick note: your data stays on this device/browser. If you want to keep seeing
+                the same data, open Daily Os from the same app/browser each time (for example,
+                Chrome on your phone).
+              </p>
+            </div>
+
+            <div className="home__onboarding-modal-progress">
+              <span>{onboardingCoreDone}/{onboardingCoreTotal} core goal done</span>
+              <span className="home__onboarding-modal-step-pill">
+                Step {onboardingModalScreen === "work" ? "1" : "2"} / 2
+              </span>
+            </div>
+
+            <div className="home__onboarding-flow-tabs" role="tablist" aria-label="Onboarding steps">
+              {onboardingWizardScreens.map((screen, index) => (
+                <button
+                  key={screen.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={onboardingModalScreen === screen.key}
+                  className={`home__onboarding-flow-tab${
+                    onboardingModalScreen === screen.key ? " home__onboarding-flow-tab--active" : ""
+                  }${screen.done ? " home__onboarding-flow-tab--done" : ""}`}
+                  onClick={() => setOnboardingModalScreen(screen.key)}
+                >
+                  <span className="home__onboarding-flow-tab-index" aria-hidden="true">
+                    {screen.done ? "✓" : index + 1}
+                  </span>
+                  <span className="home__onboarding-flow-tab-text">
+                    <strong>{screen.label}</strong>
+                    <span>{screen.desc}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {onboardingModalScreen === "work" ? (
+              <section className="home__onboarding-flow-panel" aria-label="Work onboarding">
+                <div className="home__onboarding-flow-panel-head">
+                  <h3 className="home__onboarding-flow-panel-title">How Work / Shift tracking works</h3>
+                  <p className="home__onboarding-flow-panel-desc">
+                    First set your pay/job info, then log shifts and expenses in the Work page.
+                    Daily Os uses that to calculate your daily totals.
+                  </p>
+                </div>
+
+                <div className="home__onboarding-guide-grid">
+                  <div className="home__onboarding-guide-card">
+                    <span className="home__onboarding-guide-card-index">1</span>
+                    <div className="home__onboarding-guide-card-copy">
+                      <div className="home__onboarding-guide-card-title">Work Settings</div>
+                      <p className="home__onboarding-guide-card-text">
+                        Add your job (hourly or monthly) so earnings are calculated correctly.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="home__onboarding-guide-card">
+                    <span className="home__onboarding-guide-card-index">2</span>
+                    <div className="home__onboarding-guide-card-copy">
+                      <div className="home__onboarding-guide-card-title">Work (Today)</div>
+                      <p className="home__onboarding-guide-card-text">
+                        Log a shift or expense. One saved entry is enough to complete the core goal.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="home__onboarding-guide-card">
+                    <span className="home__onboarding-guide-card-index">3</span>
+                    <div className="home__onboarding-guide-card-copy">
+                      <div className="home__onboarding-guide-card-title">Priorities (optional)</div>
+                      <p className="home__onboarding-guide-card-text">
+                        Add your focus for today so Home and Dashboard feel more useful.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <section className="home__onboarding-reset" aria-label="Day reset time">
+                  <div className="home__onboarding-reset__copy">
+                    <div className="home__onboarding-reset__title">When should your day reset?</div>
+                    <p className="home__onboarding-reset__desc">
+                      Default is <strong>00:00</strong> (midnight). If you work night shift, your
+                      "work day" may end later, so you can move the reset time (for example
+                      <strong> 04:00</strong> or <strong>06:00</strong>) to keep entries in the
+                      correct day.
+                    </p>
+                  </div>
+
+                  <div className="home__onboarding-reset__controls">
+                    <label className="home__onboarding-reset__label" htmlFor="home-onboarding-reset-time">
+                      Day resets at
+                    </label>
+                    <div className="home__onboarding-reset__input-wrap">
+                      <OnboardingTime24Input
+                        id="home-onboarding-reset-time"
+                        value={settings.dayResetHour}
+                        onCommit={(next) => onUpdateSettings({ dayResetHour: next })}
+                        className="home__onboarding-reset__input"
+                        ariaLabel="Day reset time"
+                      />
+                      <span className="home__onboarding-reset__badge" aria-hidden="true">
+                        24h
+                      </span>
+                    </div>
+                  </div>
+                </section>
+              </section>
+            ) : (
+              <section className="home__onboarding-flow-panel" aria-label="Gym onboarding">
+                <div className="home__onboarding-flow-panel-head">
+                  <h3 className="home__onboarding-flow-panel-title">How Gym / Training works</h3>
+                  <p className="home__onboarding-flow-panel-desc">
+                    First create your program in Gym Settings, then use Gym to log today's training
+                    session.
+                  </p>
+                </div>
+
+                <div className="home__onboarding-guide-grid">
+                  <div className="home__onboarding-guide-card">
+                    <span className="home__onboarding-guide-card-index">1</span>
+                    <div className="home__onboarding-guide-card-copy">
+                      <div className="home__onboarding-guide-card-title">Gym Settings</div>
+                      <p className="home__onboarding-guide-card-text">
+                        Pick a split and add exercises to each day (strength or cardio).
+                      </p>
+                    </div>
+                  </div>
+                  <div className="home__onboarding-guide-card">
+                    <span className="home__onboarding-guide-card-index">2</span>
+                    <div className="home__onboarding-guide-card-copy">
+                      <div className="home__onboarding-guide-card-title">Gym page</div>
+                      <p className="home__onboarding-guide-card-text">
+                        Choose today's training day and log your workout. Saves happen automatically.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="home__onboarding-guide-card">
+                    <span className="home__onboarding-guide-card-index">3</span>
+                    <div className="home__onboarding-guide-card-copy">
+                      <div className="home__onboarding-guide-card-title">Cardio support</div>
+                      <p className="home__onboarding-guide-card-text">
+                        Cardio logs use distance + duration (for example 10 km in 2h).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            <div className="home__onboarding-modal-actions">
+              {onboardingModalScreen === "work" ? (
+                <>
+                  <button
+                    type="button"
+                    className="home__next-step-btn"
+                    onClick={() => {
+                      if (onStartOnboardingSetup) {
+                        onStartOnboardingSetup("work", {
+                          returnToModalScreen: hasWorkSetup ? "work" : "gym",
+                        });
+                        return;
+                      }
+                      onNavigate("settings-work");
+                    }}
+                  >
+                    {hasWorkSetup ? "Edit Work Setup" : "Set up now"}
+                  </button>
+                  <button
+                    type="button"
+                    className="home__ghost-btn"
+                    onClick={() => setOnboardingModalScreen("gym")}
+                  >
+                    Next: Gym
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="home__next-step-btn"
+                    onClick={() => {
+                      if (onStartOnboardingSetup) {
+                        onStartOnboardingSetup("gym", {
+                          returnToModalScreen: "gym",
+                        });
+                        return;
+                      }
+                      onNavigate("settings-gym");
+                    }}
+                  >
+                    {hasGymProgramSetup ? "Edit Gym Setup" : "Set up now"}
+                  </button>
+                  <button
+                    type="button"
+                    className="home__ghost-btn"
+                    onClick={() => setOnboardingModalScreen("work")}
+                  >
+                    Back to Work
+                  </button>
+                </>
+              )}
+              <button
+                type="button"
+                className={`home__ghost-btn${
+                  hasOnboardingSetupProgress ? " home__ghost-btn--done" : ""
+                }`}
+                onClick={onDismissOnboardingModal}
+              >
+                {onboardingDismissLabel}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+      {/* Hero */}
       <section className="home__hero">
         <div className="home__hero-text">
           <h1 className="home__hero-greeting">{getGreeting()}</h1>
@@ -339,7 +788,8 @@ export function HomePage({
         </div>
       </section>
 
-      {/* ── Snapshot strip ───────────────────────────────────── */}
+      {/* Snapshot strip */}
+
       <section className="home__snapshot">
         {snapshotItems.map((item) => (
           <div
@@ -366,7 +816,7 @@ export function HomePage({
         ))}
       </section>
 
-      {/* ── Two-column grid ──────────────────────────────────── */}
+      {/* Two-column grid */}
       <div className="home__grid">
         {/* Left: Focus + Next Step */}
         <div className="home__grid-main">
@@ -526,7 +976,7 @@ export function HomePage({
 
             <p className="home__panel-subtle">
               {gymLast7}/7 gym days this week
-              {gymStreak > 0 && <> · {streakLabel} streak</>}
+              {gymStreak > 0 && <> • {streakLabel} streak</>}
             </p>
           </section>
         </div>

@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useId, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { DayData, AppSettings, GymSession } from '../types';
 import type { ChartDataPoint } from '../utils/dashboardUtils';
+import { PageGuideModal, usePageGuide } from '../components/PageGuideModal/PageGuideModal';
 import { calculateHours } from '../utils/dateUtils';
 import { calculateDayTotals } from '../utils/payUtils';
 import {
@@ -530,6 +531,7 @@ function BreakdownBar({ segments, currency = '€' }: {
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 type DashboardPageProps = {
+  userId: string;
   days: Record<string, DayData>;
   settings: AppSettings;
   gymSessions: Record<string, GymSession>;
@@ -802,7 +804,27 @@ const NoteIcon = (
   </svg>
 );
 
-export function DashboardPage({ days, settings, gymSessions }: DashboardPageProps) {
+const DASHBOARD_GUIDE_STEPS = [
+  {
+    title: "Pick a date range",
+    text: "Use the preset buttons (7 days, 30 days, etc.) or pick custom start/end dates to control what data you see.",
+  },
+  {
+    title: "Filter by category",
+    text: "Toggle Work, Gym, and Sleep on or off to focus on the data that matters to you right now.",
+  },
+  {
+    title: "Read the charts",
+    text: "Summary cards show totals, bar charts show earnings over time, and pie charts break down distributions.",
+  },
+  {
+    title: "Keep logging",
+    text: "The more days you log (shifts, gym sessions, sleep), the more useful the trends and averages become.",
+  },
+];
+
+export function DashboardPage({ userId, days, settings, gymSessions }: DashboardPageProps) {
+  const guide = usePageGuide(userId, "dashboard");
   const flatDailyPay = settings.workingDaysPerMonth > 0
     ? settings.monthlyFlatSalary / settings.workingDaysPerMonth
     : 0;
@@ -892,12 +914,25 @@ export function DashboardPage({ days, settings, gymSessions }: DashboardPageProp
 
   return (
     <div className="dashboard">
+      <PageGuideModal
+        userId={userId}
+        pageKey="dashboard"
+        title="Dashboard"
+        description="Your analytics hub — see trends, totals, and distributions for work, gym, and sleep data."
+        steps={DASHBOARD_GUIDE_STEPS}
+        isOpen={guide.isOpen}
+        onClose={guide.dismiss}
+      />
       <div className="dashboard__hero">
         <div className="dashboard__title-row">
           <h2 className="dashboard__title">Dashboard</h2>
           <div className="date-picker__range-chip dashboard__range-chip" aria-live="polite">
             {selectedRangeDays} day{selectedRangeDays === 1 ? '' : 's'}
           </div>
+          <button type="button" className="page-guide-trigger" onClick={guide.reopen}>
+            <span className="page-guide-trigger__icon" aria-hidden="true">?</span>
+            How it works
+          </button>
         </div>
 
         <DateRangePicker

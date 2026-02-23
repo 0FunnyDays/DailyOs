@@ -165,11 +165,14 @@ export type ExerciseLog = {
   name: string;
   type: 'strength' | 'cardio';
   sets: SetEntry[];
-  distanceKm?: number; // for cardio (future)
+  distanceKm?: number; // for cardio
+  durationMinutes?: number; // for cardio
 };
 
 export type GymSession = {
   date: string;
+  startedAt?: string;  // "HH:MM" 24h format
+  finishedAt?: string; // "HH:MM" 24h format
   dayTemplateId: string;
   dayName: string;
   exercises: ExerciseLog[];

@@ -15,9 +15,9 @@ type HeaderProps = {
 const MAIN_NAV_ITEMS: Array<{ page: Page; label: string }> = [
   { page: "home", label: "Home" },
   { page: "priorities", label: "Priorities" },
-  { page: "gym", label: "Gym" },
+  { page: "gym", label: "Gym/Training" },
   { page: "today", label: "Work" },
-  { page: "sleep", label: "Sleep" },
+  { page: "sleep", label: "Sleep/Recovery" },
   { page: "projects", label: "Projects" },
   { page: "dashboard", label: "Dashboard" },
   // { page: "travel", label: "Travel" },
@@ -145,9 +145,9 @@ export function Header({
           aria-expanded={settingsMenuOpen}
           aria-haspopup="menu"
           aria-current={isOnSettingsPage ? "page" : undefined}
-          title="Settings"
+          title="User Settings"
         >
-          <span className="header-nav__nav-label">Settings</span>
+          <span className="header-nav__nav-label">User Settings</span>
           <svg
             className={`header-nav__settings-chevron${settingsMenuOpen ? " header-nav__settings-chevron--open" : ""}`}
             width="14"
@@ -165,7 +165,7 @@ export function Header({
         </button>
 
         {settingsMenuOpen && (
-          <div className="header-nav__settings-menu" role="menu" aria-label="Settings menu">
+          <div className="header-nav__settings-menu" role="menu" aria-label="User settings menu">
             {SETTINGS_DROPDOWN_ITEMS.map((item) => (
               <button
                 key={item.page}
@@ -214,14 +214,6 @@ export function Header({
                 role="menuitem"
               >
                 Profile
-              </button>
-              <button
-                type="button"
-                className="user-menu__item"
-                onClick={() => navigate("settings-work")}
-                role="menuitem"
-              >
-                Settings
               </button>
               <button
                 type="button"

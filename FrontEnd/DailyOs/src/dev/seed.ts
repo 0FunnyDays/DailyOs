@@ -584,14 +584,14 @@ export function seedTestUser(): void {
 
     // ── Settings ──────────────────────────────────────────────────────────────
     localStorage.setItem(`dailyos_settings_${TEST_USER_ID}`, JSON.stringify({
-      dayResetHour:        4,
+      dayResetHour:        0,
       currency:            '€',
       monthlyFlatSalary:   1100,
       workingDaysPerMonth: 22,
     }));
     ensureThreeMonthDaysSeed();
     seedGymSessions();
-    console.info('[seed] Test account ready â€” username: test / password: test12');
+    console.info('[seed] Test account ready — username: test / password: test12');
     return;
 
     // ── Days ──────────────────────────────────────────────────────────────────

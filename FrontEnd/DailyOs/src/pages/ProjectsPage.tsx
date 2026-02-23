@@ -1,7 +1,9 @@
 import { useState } from "react";
 import type { Project } from "../types";
+import { PageGuideModal, usePageGuide } from "../components/PageGuideModal/PageGuideModal";
 
 type ProjectsPageProps = {
+  userId: string;
   projects: Project[];
   currentDate: string;
   onAddProject: (name: string) => void;
@@ -125,7 +127,23 @@ function ProjectCard({
   );
 }
 
+const PROJECTS_GUIDE_STEPS = [
+  {
+    title: "Create a project",
+    text: "Give your project a name (e.g. \"Portfolio website\", \"Client invoice system\"). You can have multiple active projects.",
+  },
+  {
+    title: "Log daily updates",
+    text: "Each day, write a short note about what you worked on. This builds a timeline of progress you can look back on.",
+  },
+  {
+    title: "Finish & reopen",
+    text: "Mark a project as finished when it's done. You can always reopen it later if needed.",
+  },
+];
+
 export function ProjectsPage({
+  userId,
   projects,
   currentDate,
   onAddProject,
@@ -133,6 +151,7 @@ export function ProjectsPage({
   onSetProjectDailyNote,
   onSetProjectFinished,
 }: ProjectsPageProps) {
+  const guide = usePageGuide(userId, "projects");
   const [newProjectName, setNewProjectName] = useState("");
 
   const sortedProjects = [...projects].sort((a, b) => {
@@ -153,6 +172,15 @@ export function ProjectsPage({
 
   return (
     <section className="page-renderer__section projects-page">
+      <PageGuideModal
+        userId={userId}
+        pageKey="projects"
+        title="Projects"
+        description="Track your side projects, client work, or anything you're building. Log daily updates and see your progress over time."
+        steps={PROJECTS_GUIDE_STEPS}
+        isOpen={guide.isOpen}
+        onClose={guide.dismiss}
+      />
       <div className="projects-page__head">
         <div>
           <h1 className="page-renderer__title projects-page__title">Projects</h1>
@@ -161,6 +189,10 @@ export function ProjectsPage({
           </p>
         </div>
         <div className="projects-page__head-badges">
+          <button type="button" className="page-guide-trigger" onClick={guide.reopen}>
+            <span className="page-guide-trigger__icon" aria-hidden="true">?</span>
+            How it works
+          </button>
           <span className="projects-page__head-badge">{activeProjects.length} active</span>
           <span className="projects-page__head-badge">{finishedProjects.length} finished</span>
           <span className="projects-page__head-badge">Today {currentDate}</span>
