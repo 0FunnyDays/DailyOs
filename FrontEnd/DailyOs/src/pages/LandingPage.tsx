@@ -17,14 +17,14 @@ export function LandingPage({
           <section className="landing-hero" aria-labelledby="hero-title">
             <p className="landing-hero__eyebrow">Daily Os</p>
             <h1 id="hero-title" className="landing-hero__title">
-              Track work, money, sleep &amp;&nbsp;training
+              Plan better days. Track work, recovery
               <br />
-              <span className="landing-hero__title--accent">and projects in one place.</span>
+              <span className="landing-hero__title--accent">and progress in one place.</span>
             </h1>
             <p className="landing-hero__subtitle">
-              Work logs, expenses, projects, sleep tracking, dashboard insights,
-              and gym sessions all in one workflow. Create an account and pick
-              up where you left off.
+              Daily planning, shift logs, expenses, sleep tracking, gym sessions,
+              and project progress in one simple workflow. Create an account and
+              pick up where you left off.
             </p>
 
             <div className="landing-hero__actions">
@@ -67,7 +67,15 @@ export function LandingPage({
 
 /* ── Feature data ─────────────────────────────────────────── */
 
-const ICO = { w: 22, h: 22, fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+const ICO = {
+  width: 22,
+  height: 22,
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
 
 const FEATURES = [
   {
