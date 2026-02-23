@@ -5,10 +5,15 @@ import type {
   DayData,
   DayTotals,
   Expense,
+  Page,
   Shift,
 } from "../../types";
 import { calculateDayTotals, calculateShiftPay } from "../../utils/payUtils";
-import { calculateHours } from "../../utils/dateUtils";
+import {
+  calculateHours,
+  formatDateDisplay,
+  offsetDateString,
+} from "../../utils/dateUtils";
 import "../../styles/DayView.css";
 
 function formatDuration(hours: number): string {
@@ -23,6 +28,35 @@ function formatTimeDraft(digits: string): string {
   if (digits.length <= 2) return digits;
   if (digits.length === 3) return `${digits.slice(0, 1)}:${digits.slice(1, 3)}`;
   return `${digits.slice(0, 2)}:${digits.slice(2, 4)}`;
+}
+
+function sanitizeDecimalDraft(value: string): string {
+  let result = "";
+  let hasSeparator = false;
+
+  for (const char of value) {
+    if (/\d/.test(char)) {
+      result += char;
+      continue;
+    }
+
+    if ((char === "," || char === ".") && !hasSeparator) {
+      result += char;
+      hasSeparator = true;
+    }
+  }
+
+  return result;
+}
+
+function normalizeDecimalInput(value: string): string | null {
+  const sanitized = sanitizeDecimalDraft(value);
+  if (sanitized === "") return "";
+  if (sanitized === "," || sanitized === ".") return null;
+
+  const normalized = sanitized.replace(",", ".");
+  if (!/^\d+(\.\d+)?$/.test(normalized)) return null;
+  return normalized;
 }
 
 function normalizeTimeInput(value: string): string | null {
@@ -129,6 +163,7 @@ function NumberInput({
   placeholder,
   min,
   step,
+  disabled,
 }: {
   label: string;
   value: string | number;
@@ -136,18 +171,67 @@ function NumberInput({
   placeholder?: string;
   min?: number;
   step?: number;
+  disabled?: boolean;
 }) {
+  const [raw, setRaw] = useState(value === "" ? "" : String(value));
+  const isFocusedRef = useRef(false);
+
+  useEffect(() => {
+    if (isFocusedRef.current) return;
+    setRaw(value === "" ? "" : String(value));
+  }, [value]);
+
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const nextRaw = sanitizeDecimalDraft(e.target.value);
+    setRaw(nextRaw);
+
+    if (nextRaw === "") {
+      onChange("");
+      return;
+    }
+
+    // Don't commit partial decimals like "5," until blur.
+    if (nextRaw.endsWith(",") || nextRaw.endsWith(".")) return;
+
+    const normalized = normalizeDecimalInput(nextRaw);
+    if (normalized !== null) onChange(normalized);
+  }
+
+  function handleBlur() {
+    isFocusedRef.current = false;
+
+    if (raw === "") {
+      onChange("");
+      return;
+    }
+
+    const normalized = normalizeDecimalInput(raw.endsWith(",") || raw.endsWith(".") ? raw.slice(0, -1) : raw);
+    if (normalized === null || normalized === "") {
+      setRaw("");
+      onChange("");
+      return;
+    }
+
+    setRaw(normalized);
+    onChange(normalized);
+  }
+
   return (
     <label className="dv-field">
       <span className="dv-field__label">{label}</span>
       <input
-        type="number"
+        type="text"
         inputMode="decimal"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={raw}
+        disabled={disabled}
+        onFocus={() => {
+          isFocusedRef.current = true;
+        }}
+        onChange={handleChange}
+        onBlur={handleBlur}
         placeholder={placeholder}
-        min={min}
-        step={step}
+        data-min={min}
+        data-step={step}
         className="dv-field__input"
       />
     </label>
@@ -177,10 +261,12 @@ function ShiftCard({
 
   const bothTimesSet = shift.startTime !== "" && shift.endTime !== "";
   const hours = bothTimesSet ? calculateHours(shift.startTime, shift.endTime) : null;
+  const isJobLinked = Boolean(shift.jobId);
+  const computedFlatPay = shift.payAmount > 0 ? shift.payAmount : flatDailyPay;
 
   const pay =
     shift.payType === "flat"
-      ? flatDailyPay
+      ? calculateShiftPay(shift, flatDailyPay)
       : bothTimesSet
         ? calculateShiftPay(shift, flatDailyPay)
         : null;
@@ -199,6 +285,11 @@ function ShiftCard({
       <div className="dv-shift__head">
         <div className="dv-shift__title-wrap">
           <h3 className="dv-shift__title">Shift {index + 1}</h3>
+          {shift.jobName ? (
+            <span className="dv-shift__job-badge" title={`Job: ${shift.jobName}`}>
+              {shift.jobName}
+            </span>
+          ) : null}
           <span className={`dv-shift__type-badge dv-shift__type-badge--${shift.payType}`}>
             {shift.payType}
           </span>
@@ -235,6 +326,8 @@ function ShiftCard({
             onChange={(e) =>
               onUpdate({ payType: e.target.value as "flat" | "hourly" })
             }
+            disabled={isJobLinked}
+            title={isJobLinked ? "Pay type is inherited from the selected job" : undefined}
             className="dv-field__select"
           >
             <option value="hourly">Hourly</option>
@@ -246,8 +339,11 @@ function ShiftCard({
           <div className="dv-shift__metric dv-shift__metric--pay">
             <span className="dv-shift__metric-label">Daily pay</span>
             <span className="dv-shift__metric-value dv-shift__metric-value--money">
-              {formatMoney(currency, flatDailyPay)}
+              {formatMoney(currency, computedFlatPay)}
             </span>
+            {isJobLinked && (
+              <span className="dv-field__hint">Inherited from job settings</span>
+            )}
           </div>
         ) : (
           <NumberInput
@@ -256,6 +352,7 @@ function ShiftCard({
             min={0}
             step={0.5}
             placeholder="0"
+            disabled={isJobLinked}
             onChange={(v) => onUpdate({ payAmount: parseFloat(v) || 0 })}
           />
         )}
@@ -495,7 +592,11 @@ function DaySummaryCard({
 type DayViewProps = {
   day: DayData;
   settings: AppSettings;
-  onAddShift: () => void;
+  selectedDate: string;
+  todayDate: string;
+  onSelectDate: (date: string) => void;
+  onNavigate: (page: Page) => void;
+  onAddShift: (jobId?: string) => void;
   onUpdateShift: (shiftId: string, updates: Partial<Shift>) => void;
   onRemoveShift: (shiftId: string) => void;
   onAddExpense: () => void;
@@ -507,6 +608,10 @@ type DayViewProps = {
 export function DayView({
   day,
   settings,
+  selectedDate,
+  todayDate,
+  onSelectDate,
+  onNavigate,
   onAddShift,
   onUpdateShift,
   onRemoveShift,
@@ -521,6 +626,8 @@ export function DayView({
       : 0;
 
   const currency = settings.currency;
+  const jobs = settings.jobs ?? [];
+  const hasWorkSetup = jobs.length > 0;
   const totals = calculateDayTotals(day, flatDailyPay);
   const trackedHours = sumTrackedHours(day.shifts);
 
@@ -551,15 +658,72 @@ export function DayView({
     },
   ] as const;
 
+  const isToday = selectedDate === todayDate;
+
+  if (!hasWorkSetup) {
+    return (
+      <div className="day-view">
+        <header className="day-view__hero">
+          <div className="day-view__hero-text">
+            <h1 className="day-view__title">Work</h1>
+            <p className="day-view__subtitle">
+              Set up at least one job before logging shifts.
+            </p>
+          </div>
+        </header>
+
+        <section className="dv-section day-view__setup-empty">
+          <p className="day-view__setup-empty-title">No jobs set up yet.</p>
+          <button
+            type="button"
+            className="dv-btn dv-btn--primary"
+            onClick={() => onNavigate("settings-work")}
+          >
+            Go to Settings
+          </button>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="day-view">
       <header className="day-view__hero">
-        <div>
-          <h1 className="day-view__title">Work & expenses</h1>
+        <div className="day-view__hero-text">
+          <h1 className="day-view__title">Work & Expenses</h1>
           <p className="day-view__subtitle">
             Log shifts, tips, and expenses. Summary updates automatically.
           </p>
         </div>
+        <nav className="day-view__date-nav" role="group" aria-label="Work date controls">
+          <button
+            type="button"
+            className="day-view__date-arrow"
+            onClick={() => onSelectDate(offsetDateString(selectedDate, -1))}
+            aria-label="Previous day"
+          >
+            {"<"}
+          </button>
+          <span className="day-view__date-pill">{formatDateDisplay(selectedDate)}</span>
+          <button
+            type="button"
+            className="day-view__date-arrow"
+            onClick={() => onSelectDate(offsetDateString(selectedDate, 1))}
+            disabled={isToday}
+            aria-label="Next day"
+          >
+            {">"}
+          </button>
+          {!isToday && (
+            <button
+              type="button"
+              className="day-view__today-btn"
+              onClick={() => onSelectDate(todayDate)}
+            >
+              Today
+            </button>
+          )}
+        </nav>
       </header>
 
       <section className="day-view__overview" aria-label="Day overview">
@@ -583,14 +747,48 @@ export function DayView({
                 <h2 className="dv-section__title">Shifts</h2>
                 <span className="dv-section__meta">{day.shifts.length} total</span>
               </div>
-              <button type="button" className="dv-btn dv-btn--primary" onClick={onAddShift}>
-                + Add Shift
+              <button
+                type="button"
+                className={`dv-btn ${jobs.length > 0 ? "dv-btn--secondary" : "dv-btn--primary"}`}
+                onClick={() => onAddShift()}
+              >
+                {jobs.length > 0 ? "+ Blank Shift" : "+ Add Shift"}
               </button>
             </div>
 
+            {jobs.length > 0 && (
+              <div className="dv-job-picker" aria-label="Quick add shift from saved jobs">
+                <span className="dv-job-picker__label">Add from job</span>
+                <div className="dv-job-picker__list">
+                  {jobs.map((job) => (
+                    <button
+                      key={job.id}
+                      type="button"
+                      className={`dv-job-picker__btn dv-job-picker__btn--${job.payType}`}
+                      onClick={() => onAddShift(job.id)}
+                      title={
+                        job.payType === "hourly"
+                          ? `${job.name} • ${currency}${job.rate}/hr`
+                          : `${job.name} • ${currency}${job.rate}/mo`
+                      }
+                    >
+                      <span className="dv-job-picker__btn-name">{job.name}</span>
+                      <span className="dv-job-picker__btn-meta">
+                        {job.payType === "hourly"
+                          ? `${currency}${job.rate}/hr`
+                          : `${currency}${job.rate}/mo`}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {day.shifts.length === 0 ? (
               <p className="dv-section__empty">
-                No shifts yet. Add one to start tracking your day.
+                {jobs.length > 0
+                  ? "No shifts yet. Add one from your jobs above or create a blank shift."
+                  : "No shifts yet. Add one to start tracking your day."}
               </p>
             ) : (
               <div className="dv-section__list">
@@ -652,3 +850,4 @@ export function DayView({
     </div>
   );
 }
+

@@ -66,8 +66,9 @@
     backdrop-filter: blur(calc(var(--glass-blur) + 2px));
     -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 2px));
     box-shadow:
-        0 18px 46px rgba(0, 0, 0, 0.12),
-        inset 0 1px 0 color-mix(in srgb, white 10%, transparent);
+        0 18px 46px rgba(0, 0, 0, 0.35),
+        0 0 60px rgba(168, 85, 247, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 [data-theme="light"] .login-card {
@@ -206,11 +207,14 @@
     color: var(--clr-bg);
     background: var(--clr-accent);
     font-weight: 700;
+    box-shadow: 0 0 20px color-mix(in srgb, var(--clr-accent) 12%, transparent);
 }
 
 .btn--primary:hover:not([disabled]) {
     background: var(--clr-accent-h);
-    box-shadow: 0 6px 18px color-mix(in srgb, var(--clr-accent) 25%, transparent);
+    box-shadow:
+        0 6px 18px color-mix(in srgb, var(--clr-accent) 30%, transparent),
+        0 0 32px color-mix(in srgb, var(--clr-accent) 14%, transparent);
 }
 
 .login-form .btn--primary {

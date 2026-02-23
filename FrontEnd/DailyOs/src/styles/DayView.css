@@ -30,9 +30,14 @@
 .day-view__hero {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 16px;
-    text-align: center;
+    justify-content: space-between;
+    gap: 14px;
+    text-align: left;
+    flex-wrap: wrap;
+}
+
+.day-view__hero-text {
+    min-width: 0;
 }
 
 .day-view__eyebrow {
@@ -59,6 +64,85 @@
     font-size: 0.9rem;
     line-height: 1.5;
     max-width: 56ch;
+}
+
+.day-view__date-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid var(--clr-border);
+    background: color-mix(in srgb, var(--clr-surface) 88%, transparent);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+}
+
+.day-view__date-arrow {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--clr-text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    transition:
+        background var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast);
+}
+
+.day-view__date-arrow:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--clr-surface-2) 80%, transparent);
+    border-color: var(--clr-border);
+}
+
+.day-view__date-arrow:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.day-view__date-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    min-width: min(46vw, 270px);
+    padding: 0 12px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--clr-accent-soft) 70%, var(--clr-surface));
+    color: var(--clr-text);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.day-view__today-btn {
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--clr-accent) 22%, var(--clr-border));
+    background: color-mix(in srgb, var(--clr-accent-soft) 80%, transparent);
+    color: var(--clr-accent-txt);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+.day-view__today-btn:hover {
+    background: color-mix(in srgb, var(--clr-accent-soft) 100%, transparent);
+    border-color: color-mix(in srgb, var(--clr-accent) 36%, var(--clr-border));
 }
 
 /* ------------------------------------------------------------
@@ -208,6 +292,90 @@
     gap: 10px;
 }
 
+.day-view__setup-empty {
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    padding: 28px 20px;
+    text-align: center;
+}
+
+.day-view__setup-empty-title {
+    margin: 0;
+    color: var(--clr-text);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.dv-job-picker {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--clr-border);
+    background: color-mix(in srgb, var(--clr-surface-2) 64%, transparent);
+}
+
+.dv-job-picker__label {
+    color: var(--clr-text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.dv-job-picker__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dv-job-picker__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    max-width: 100%;
+    padding: 7px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--clr-border);
+    background: color-mix(in srgb, var(--clr-surface) 85%, transparent);
+    color: var(--clr-text);
+    font: inherit;
+    cursor: pointer;
+    transition:
+        transform var(--transition-fast),
+        border-color var(--transition-fast),
+        background var(--transition-fast);
+}
+
+.dv-job-picker__btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--clr-border-2);
+}
+
+.dv-job-picker__btn--hourly {
+    border-color: color-mix(in srgb, var(--clr-blue) 25%, var(--clr-border));
+    background: color-mix(in srgb, var(--clr-blue-soft) 70%, var(--clr-surface));
+}
+
+.dv-job-picker__btn--flat {
+    border-color: color-mix(in srgb, var(--clr-green) 25%, var(--clr-border));
+    background: color-mix(in srgb, var(--clr-green-soft) 75%, var(--clr-surface));
+}
+
+.dv-job-picker__btn-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.dv-job-picker__btn-meta {
+    color: var(--clr-text-muted);
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
 /* ------------------------------------------------------------
    Buttons
    ------------------------------------------------------------ */
@@ -233,15 +401,25 @@
     opacity: 0.85;
 }
 
+.dv-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+    box-shadow: none;
+}
+
 .dv-btn--primary {
     background: var(--clr-accent);
     color: var(--clr-bg);
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--clr-accent) 25%, transparent);
+    box-shadow:
+        0 2px 8px color-mix(in srgb, var(--clr-accent) 25%, transparent),
+        0 0 20px color-mix(in srgb, var(--clr-accent) 10%, transparent);
 }
 
 .dv-btn--primary:hover {
     background: var(--clr-accent-h);
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--clr-accent) 35%, transparent);
+    box-shadow:
+        0 4px 14px color-mix(in srgb, var(--clr-accent) 35%, transparent),
+        0 0 28px color-mix(in srgb, var(--clr-accent) 15%, transparent);
 }
 
 .dv-btn--secondary {
@@ -318,6 +496,13 @@
     box-shadow: var(--shadow-focus-ring);
 }
 
+.dv-field__input:disabled,
+.dv-field__select:disabled {
+    opacity: 0.72;
+    cursor: not-allowed;
+    background: color-mix(in srgb, var(--clr-input) 75%, var(--clr-surface-2));
+}
+
 .dv-field__input--time {
     width: 88px;
     text-align: center;
@@ -337,6 +522,12 @@
 .dv-expense__amount {
     appearance: textfield;
     -moz-appearance: textfield;
+}
+
+.dv-field__hint {
+    color: var(--clr-text-dim);
+    font-size: 0.72rem;
+    line-height: 1.2;
 }
 
 /* ------------------------------------------------------------
@@ -368,6 +559,7 @@
 .dv-shift__title-wrap {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
@@ -403,6 +595,23 @@
     color: var(--clr-green);
     border-color: color-mix(in srgb, var(--clr-green) 20%, var(--clr-border));
     background: var(--clr-green-soft);
+}
+
+.dv-shift__job-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    max-width: 220px;
+    padding: 0 8px;
+    border-radius: 6px;
+    border: 1px solid color-mix(in srgb, var(--clr-accent) 20%, var(--clr-border));
+    background: color-mix(in srgb, var(--clr-accent-soft) 70%, var(--clr-surface));
+    color: var(--clr-accent-txt);
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dv-shift__time-row,
@@ -722,6 +931,22 @@
         padding: 20px 16px 28px;
     }
 
+    .day-view__hero {
+        align-items: flex-start;
+        justify-content: flex-start;
+        flex-direction: column;
+    }
+
+    .day-view__date-nav {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .day-view__date-pill {
+        flex: 1;
+        min-width: 0;
+    }
+
     .day-view__overview {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -744,6 +969,33 @@
     .day-view__overview {
         grid-template-columns: 1fr;
         gap: 8px;
+    }
+
+    .day-view__date-nav {
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .day-view__date-pill {
+        min-width: 0;
+        padding: 0 8px;
+        font-size: 0.76rem;
+    }
+
+    .day-view__today-btn {
+        padding: 0 8px;
+        font-size: 0.76rem;
+    }
+
+    .dv-job-picker__list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .dv-job-picker__btn {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .dv-section {

@@ -1,12 +1,23 @@
 export type PayType = 'flat' | 'hourly';
 
+export type Job = {
+  id: string;
+  name: string;
+  payType: PayType;
+  rate: number; // hourly: €/hr, flat: €/month
+  daysPerWeek?: number; // hourly jobs only (average working days per week)
+  daysPerMonth?: number; // flat jobs only (working days per month)
+};
+
 export type Shift = {
   id: string;
   startTime: string; // "HH:MM" 24h format
   endTime: string;   // "HH:MM" — may be earlier than startTime (crosses midnight)
   payType: PayType;
-  payAmount: number; // for hourly: hourly rate. for flat: ignored (calculated from settings)
+  payAmount: number; // for hourly: hourly rate. for flat: daily rate (from job) or 0 (use global)
   tips: number;
+  jobId?: string;    // links to Job.id
+  jobName?: string;  // snapshot of job name at time of shift
 };
 
 export type Expense = {
@@ -60,11 +71,11 @@ export type TravelTrip = {
 };
 
 export type AppSettings = {
-  dayResetHour: number;       // 0–23, default 4
+  dayResetHour: number;       // supports minutes as decimal hours (e.g. 4.5 = 04:30)
   currency: string;           // default '€'
-  monthlyFlatSalary: number;  // monthly salary for flat-type shifts, default 0
+  monthlyFlatSalary: number;  // legacy: monthly salary for flat-type shifts without a job
   workingDaysPerMonth: number; // used to calculate daily flat pay, default 22
-  theme: 'dark' | 'light';   // default 'dark'
+  jobs: Job[];                // configured jobs
 };
 
 export type DayTotals = {
@@ -89,6 +100,9 @@ export type Session = {
 
 export type Page =
   | 'home'
+  | 'about'
+  | 'privacy'
+  | 'contact'
   | 'priorities'
   | 'today'
   | 'dashboard'
@@ -152,3 +166,5 @@ export type StorageSchema = {
   projects?: Project[];
   travelTrips?: TravelTrip[];
 };
+
+

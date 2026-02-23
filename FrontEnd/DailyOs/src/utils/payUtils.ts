@@ -8,7 +8,8 @@ import { calculateHours } from './dateUtils';
  */
 export function calculateShiftPay(shift: Shift, flatDailyPay: number): number {
   if (shift.payType === 'flat') {
-    return flatDailyPay;
+    // Per-job daily rate takes priority; fall back to global flat pay
+    return shift.payAmount > 0 ? shift.payAmount : flatDailyPay;
   }
   if (!shift.startTime || !shift.endTime) return 0;
   const hours = calculateHours(shift.startTime, shift.endTime);

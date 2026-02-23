@@ -5,7 +5,6 @@ import { useAuth } from "./hooks/useAuth";
 import { useAppData } from "./hooks/useAppData";
 import { useGymData } from "./hooks/useGymData";
 import { useCurrentDay } from "./hooks/useCurrentDay";
-import { applyTheme, getSavedTheme } from "./utils/themeUtils";
 
 import { Header } from "./components/Header/Header";
 import { Footer } from "./components/Footer/Footer";
@@ -14,6 +13,9 @@ import { DayView } from "./components/DayView/DayView";
 import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { HomePage } from "./pages/HomePage";
+import { AboutPage } from "./pages/AboutPage";
+import { PrivacyPage } from "./pages/PrivacyPage";
+import { ContactPage } from "./pages/ContactPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
 import { TravelPage } from "./pages/TravelPage";
@@ -26,6 +28,9 @@ import { GymPage } from "./pages/GymPage";
 
 const VALID_PAGES: Page[] = [
   "home",
+  "about",
+  "privacy",
+  "contact",
   "priorities",
   "today",
   "dashboard",
@@ -58,11 +63,6 @@ function App() {
   >(null);
   const [isExiting, setIsExiting] = useState(false);
   const authNavTimeoutRef = useRef<number | null>(null);
-
-  // Apply saved theme on mount (covers landing/login pages)
-  useEffect(() => {
-    applyTheme(getSavedTheme());
-  }, []);
 
   useEffect(() => {
     if (!session) {
@@ -196,6 +196,9 @@ function AuthenticatedApp({
     addTravelTrip,
     updateTravelTrip,
     setTravelTripFinished,
+    addJob,
+    updateJob,
+    removeJob,
     updateSettings,
   } = useAppData(session.userId);
 
@@ -203,6 +206,16 @@ function AuthenticatedApp({
     useGymData(session.userId);
 
   const currentDate = useCurrentDay(settings);
+  const [workPageDate, setWorkPageDate] = useState(currentDate);
+  const previousLogicalDateRef = useRef(currentDate);
+
+  useEffect(() => {
+    // If the user is viewing the logical "today", keep it in sync after day rollover.
+    setWorkPageDate((selectedDate) =>
+      selectedDate === previousLogicalDateRef.current ? currentDate : selectedDate,
+    );
+    previousLogicalDateRef.current = currentDate;
+  }, [currentDate]);
 
   // ── Hash-based page routing ───────────────────────────────────────────────
   const readHashPage = useCallback((): Page => {
@@ -226,13 +239,13 @@ function AuthenticatedApp({
     return () => window.removeEventListener("hashchange", onHashChange);
   }, [readHashPage]);
 
-  // Apply theme whenever it changes
-  useEffect(() => {
-    applyTheme(settings.theme);
-  }, [settings.theme]);
-
   const currentDay: DayData = days[currentDate] ?? {
     date: currentDate,
+    shifts: [],
+    expenses: [],
+  };
+  const selectedWorkDay: DayData = days[workPageDate] ?? {
+    date: workPageDate,
     shifts: [],
     expenses: [],
   };
@@ -250,12 +263,6 @@ function AuthenticatedApp({
                 onNavigate={navigate}
                 session={session}
                 avatar={currentUser?.avatar ?? null}
-                theme={settings.theme}
-                onToggleTheme={() =>
-                  updateSettings({
-                    theme: settings.theme === "dark" ? "light" : "dark",
-                  })
-                }
                 onLogout={onLogout}
               />
             </div>
@@ -277,6 +284,12 @@ function AuthenticatedApp({
                             }
                           />
                         );
+                      case "about":
+                        return <AboutPage onNavigate={navigate} />;
+                      case "privacy":
+                        return <PrivacyPage onNavigate={navigate} />;
+                      case "contact":
+                        return <ContactPage onNavigate={navigate} />;
                       case "dashboard":
                         return (
                           <DashboardPage
@@ -319,11 +332,9 @@ function AuthenticatedApp({
                       case "sleep":
                         return (
                           <SleepPage
-                            day={currentDay}
+                            currentDate={currentDate}
                             days={days}
-                            onUpdateDayMeta={(updates) =>
-                              updateDayMeta(currentDate, updates)
-                            }
+                            onUpdateDayMeta={updateDayMeta}
                             onNavigate={navigate}
                           />
                         );
@@ -332,6 +343,9 @@ function AuthenticatedApp({
                           <WorkSettingsPage
                             settings={settings}
                             onUpdateSettings={updateSettings}
+                            onAddJob={addJob}
+                            onUpdateJob={updateJob}
+                            onRemoveJob={removeJob}
                           />
                         );
                       case "settings-work":
@@ -339,6 +353,9 @@ function AuthenticatedApp({
                           <WorkSettingsPage
                             settings={settings}
                             onUpdateSettings={updateSettings}
+                            onAddJob={addJob}
+                            onUpdateJob={updateJob}
+                            onRemoveJob={removeJob}
                           />
                         );
                       case "settings-gym":
@@ -369,20 +386,24 @@ function AuthenticatedApp({
                       default:
                         return (
                           <DayView
-                            day={currentDay}
+                            day={selectedWorkDay}
                             settings={settings}
-                            onAddShift={() => addShift(currentDate)}
+                            selectedDate={workPageDate}
+                            todayDate={currentDate}
+                            onSelectDate={setWorkPageDate}
+                            onNavigate={navigate}
+                            onAddShift={(jobId) => addShift(workPageDate, jobId)}
                             onUpdateShift={(id, updates) =>
-                              updateShift(currentDate, id, updates)
+                              updateShift(workPageDate, id, updates)
                             }
-                            onRemoveShift={(id) => removeShift(currentDate, id)}
-                            onAddExpense={() => addExpense(currentDate)}
+                            onRemoveShift={(id) => removeShift(workPageDate, id)}
+                            onAddExpense={() => addExpense(workPageDate)}
                             onUpdateExpense={(id, updates) =>
-                              updateExpense(currentDate, id, updates)
+                              updateExpense(workPageDate, id, updates)
                             }
-                            onRemoveExpense={(id) => removeExpense(currentDate, id)}
+                            onRemoveExpense={(id) => removeExpense(workPageDate, id)}
                             onUpdateNote={(note) =>
-                              updateDayNote(currentDate, note)
+                              updateDayNote(workPageDate, note)
                             }
                           />
                         );

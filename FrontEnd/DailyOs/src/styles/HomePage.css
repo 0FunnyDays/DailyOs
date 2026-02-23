@@ -27,6 +27,100 @@
     }
 }
 
+/* ------------------------------------------------------------
+   Hero greeting
+   ------------------------------------------------------------ */
+
+.home__hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.home__hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.home__hero-greeting {
+    margin: 0;
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--clr-text);
+    line-height: 1.15;
+}
+
+.home__hero-date {
+    color: var(--clr-text-muted);
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.home__hero-progress {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 8px;
+    border-radius: 14px;
+    border: 1px solid var(--clr-border);
+    background: color-mix(in srgb, var(--clr-surface) 80%, transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    box-shadow: var(--glass-shadow);
+}
+
+.home__hero-ring {
+    width: 48px;
+    height: 48px;
+    display: block;
+    transform: rotate(-90deg);
+    flex-shrink: 0;
+}
+
+.home__hero-progress-label {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    line-height: 1.15;
+}
+
+.home__hero-progress-label strong {
+    color: var(--clr-text);
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.home__hero-progress-label span {
+    color: var(--clr-text-dim);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ------------------------------------------------------------
+   Two-column grid layout
+   ------------------------------------------------------------ */
+
+.home__grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 14px;
+    align-items: start;
+}
+
+.home__grid-main,
+.home__grid-side {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
 .home__section {
     display: flex;
     flex-direction: column;
@@ -395,6 +489,45 @@
         );
 }
 
+/* Colored accent bars on snapshot cards */
+.home__snapshot-item--blue,
+.home__snapshot-item--green,
+.home__snapshot-item--purple,
+.home__snapshot-item--accent {
+    position: relative;
+    padding-left: 20px;
+    overflow: hidden;
+}
+
+.home__snapshot-item--blue::before,
+.home__snapshot-item--green::before,
+.home__snapshot-item--purple::before,
+.home__snapshot-item--accent::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+}
+
+.home__snapshot-item--blue::before {
+    background: var(--clr-blue);
+}
+
+.home__snapshot-item--green::before {
+    background: var(--clr-green);
+}
+
+.home__snapshot-item--purple::before {
+    background: var(--clr-purple, var(--clr-accent));
+}
+
+.home__snapshot-item--accent::before {
+    background: var(--clr-accent);
+}
+
 .home__snapshot-top {
     display: flex;
     align-items: center;
@@ -593,12 +726,16 @@
     justify-self: start;
     color: var(--clr-bg);
     background: var(--clr-accent);
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--clr-accent) 25%, transparent);
+    box-shadow:
+        0 2px 8px color-mix(in srgb, var(--clr-accent) 25%, transparent),
+        0 0 20px color-mix(in srgb, var(--clr-accent) 10%, transparent);
 }
 
 .home__next-step-btn:hover {
     background: var(--clr-accent-h);
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--clr-accent) 35%, transparent);
+    box-shadow:
+        0 4px 14px color-mix(in srgb, var(--clr-accent) 35%, transparent),
+        0 0 28px color-mix(in srgb, var(--clr-accent) 15%, transparent);
 }
 
 .home__ghost-btn {
@@ -1233,6 +1370,10 @@
    ------------------------------------------------------------ */
 
 @media (max-width: 900px) {
+    .home__grid {
+        grid-template-columns: 1fr;
+    }
+
     .home__snapshot {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1258,6 +1399,10 @@
     .home {
         padding: 20px 16px 32px;
         gap: 20px;
+    }
+
+    .home__hero-greeting {
+        font-size: 1.2rem;
     }
 
     .home__section-head {
@@ -1355,6 +1500,81 @@
 }
 
 /* ------------------------------------------------------------
+   Sleep date picker
+   ------------------------------------------------------------ */
+
+.sleep-page__date-picker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sleep-page__date-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    border-radius: 14px;
+    border: 1px solid var(--clr-border);
+    background: color-mix(in srgb, var(--clr-surface) 75%, transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    box-shadow: var(--glass-shadow);
+}
+
+.sleep-page__date-arrow {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--clr-text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1;
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.sleep-page__date-arrow:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--clr-surface-2) 90%, transparent);
+    color: var(--clr-text);
+    border-color: var(--clr-border);
+}
+
+.sleep-page__date-arrow:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.sleep-page__date-nav .sleep-page__date-pill {
+    min-width: 180px;
+    text-align: center;
+    padding: 0 8px;
+}
+
+.sleep-page__today-btn {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--clr-accent) 18%, var(--clr-border));
+    background: color-mix(in srgb, var(--clr-accent-soft) 60%, transparent);
+    color: var(--clr-accent-txt);
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.sleep-page__today-btn:hover {
+    background: color-mix(in srgb, var(--clr-accent-soft) 85%, transparent);
+    border-color: color-mix(in srgb, var(--clr-accent) 28%, var(--clr-border));
+}
+
+/* ------------------------------------------------------------
    Reduced motion
    ------------------------------------------------------------ */
 
@@ -1369,6 +1589,7 @@
     .home__field-input,
     .home__field-select,
     .home__ring-progress,
+    .home__hero-ring .home__ring-progress,
     .sleep-page__trend-bar {
         transition: none !important;
         animation: none !important;

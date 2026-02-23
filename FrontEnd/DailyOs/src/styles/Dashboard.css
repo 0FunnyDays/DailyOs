@@ -101,13 +101,7 @@
     color: var(--clr-bg);
     border-color: var(--clr-accent);
     font-weight: 700;
-    box-shadow: 0 2px 12px rgba(200, 238, 68, 0.25);
-}
-
-[data-theme="light"] .date-picker__btn--active {
-    background: var(--clr-accent);
-    color: #1a1a1e;
-    box-shadow: 0 2px 12px rgba(232, 197, 69, 0.25);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--clr-accent) 30%, transparent);
 }
 
 .date-picker__custom {
@@ -155,7 +149,7 @@
     box-shadow: var(--shadow-focus-ring);
 }
 
-[data-theme="dark"] .date-picker__input {
+.date-picker__input {
     color-scheme: dark;
 }
 
@@ -281,7 +275,7 @@
     color: var(--clr-accent-txt);
     background: color-mix(in srgb, var(--clr-accent) 18%, var(--clr-surface));
     border-color: color-mix(in srgb, var(--clr-accent) 50%, var(--clr-border));
-    box-shadow: 0 2px 12px rgba(200, 238, 68, 0.14);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--clr-accent) 18%, transparent);
 }
 
 .dashboard__data-filter-btn:focus-visible,
@@ -333,12 +327,10 @@
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
-}
-
-[data-theme="light"] .stat-card:hover {
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    transform: translateY(-3px);
+    box-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.3),
+        0 0 24px rgba(168, 85, 247, 0.06);
 }
 
 /* Colored left accent bar */
@@ -423,17 +415,12 @@
 /* ── Accent variant ──────────────────────────────────────── */
 
 .stat-card--accent {
-    background: linear-gradient(135deg, rgba(200, 238, 68, 0.14) 0%, var(--clr-surface) 100%);
-    border: 1px solid rgba(200, 238, 68, 0.14);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--clr-accent) 14%, transparent) 0%, var(--clr-surface) 100%);
+    border: 1px solid color-mix(in srgb, var(--clr-accent) 14%, transparent);
 }
 .stat-card--accent::before          { background: var(--clr-accent); }
 .stat-card--accent .stat-card__icon { background: var(--clr-accent-soft); color: var(--clr-accent); }
 .stat-card--accent .stat-card__value { color: var(--clr-accent-txt); }
-
-[data-theme="light"] .stat-card--accent {
-    background: linear-gradient(135deg, rgba(232, 197, 69, 0.10) 0%, var(--clr-surface) 100%);
-    border-color: rgba(232, 197, 69, 0.12);
-}
 
 /* ── Red variant ─────────────────────────────────────────── */
 

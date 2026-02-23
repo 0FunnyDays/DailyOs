@@ -5,12 +5,26 @@
  */
 export function getCurrentDate(resetHour: number): string {
   const now = new Date();
-  if (now.getHours() < resetHour) {
+  const safeResetHour = Number.isFinite(resetHour) ? resetHour : 4;
+  const resetMinutes = Math.min(23 * 60 + 59, Math.max(0, Math.round(safeResetHour * 60)));
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  if (nowMinutes < resetMinutes) {
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     return toDateString(yesterday);
   }
   return toDateString(now);
+}
+
+export function offsetDateString(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  date.setUTCDate(date.getUTCDate() + days);
+
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function toDateString(date: Date): string {

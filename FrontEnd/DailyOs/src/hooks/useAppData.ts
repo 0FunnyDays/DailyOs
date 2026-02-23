@@ -1,13 +1,15 @@
-import type { AppSettings, DayData, Expense, Project, Shift, TravelTrip } from '../types';
+import type { AppSettings, DayData, Expense, Job, PayType, Project, Shift, TravelTrip } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '../utils/idUtils';
+
+const AVG_WEEKS_PER_MONTH = 52 / 12;
 
 const DEFAULT_SETTINGS: AppSettings = {
   dayResetHour: 4,
   currency: '€',
   monthlyFlatSalary: 0,
   workingDaysPerMonth: 22,
-  theme: 'dark',
+  jobs: [],
 };
 
 const DEFAULT_SHIFT: Omit<Shift, 'id'> = {
@@ -62,9 +64,42 @@ export function useAppData(userId: string) {
     return days[date] ?? { date, shifts: [], expenses: [] };
   }
 
-  function addShift(date: string) {
+  function addShift(date: string, jobId?: string) {
     const day = getOrCreateDay(date);
-    const newShift: Shift = { id: generateId(), ...DEFAULT_SHIFT };
+    const job = jobId ? (settings.jobs ?? []).find((j) => j.id === jobId) : undefined;
+
+    let shiftData: Omit<Shift, 'id'>;
+    if (job) {
+      const legacyFlatDaysFromWeek =
+        job.daysPerWeek && job.daysPerWeek > 0
+          ? job.daysPerWeek * AVG_WEEKS_PER_MONTH
+          : 0;
+      const flatMonthlyDays =
+        job.payType === 'flat'
+          ? (job.daysPerMonth && job.daysPerMonth > 0
+              ? job.daysPerMonth
+              : legacyFlatDaysFromWeek > 0
+                ? legacyFlatDaysFromWeek
+                : settings.workingDaysPerMonth)
+          : 0;
+      const dailyPay =
+        job.payType === 'flat' && flatMonthlyDays > 0
+          ? job.rate / flatMonthlyDays
+          : 0;
+      shiftData = {
+        startTime: '',
+        endTime: '',
+        payType: job.payType,
+        payAmount: job.payType === 'hourly' ? job.rate : dailyPay,
+        tips: 0,
+        jobId: job.id,
+        jobName: job.name,
+      };
+    } else {
+      shiftData = { ...DEFAULT_SHIFT };
+    }
+
+    const newShift: Shift = { id: generateId(), ...shiftData };
     setDays({ ...days, [date]: { ...day, shifts: [...day.shifts, newShift] } });
   }
 
@@ -271,6 +306,58 @@ export function useAppData(userId: string) {
     );
   }
 
+  function addJob(name: string, payType: PayType, rate: number, cadenceValue?: number) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const newJob: Job = {
+      id: generateId(),
+      name: trimmed,
+      payType,
+      rate,
+      ...(payType === 'flat'
+        ? { daysPerMonth: Math.min(31, Math.max(1, cadenceValue ?? settings.workingDaysPerMonth ?? 22)) }
+        : { daysPerWeek: Math.min(7, Math.max(1, cadenceValue ?? 5)) }),
+    };
+    setSettings({ ...settings, jobs: [...(settings.jobs ?? []), newJob] });
+  }
+
+  function updateJob(jobId: string, updates: Partial<Pick<Job, 'name' | 'payType' | 'rate' | 'daysPerWeek' | 'daysPerMonth'>>) {
+    setSettings({
+      ...settings,
+      jobs: (settings.jobs ?? []).map((j) =>
+        j.id !== jobId
+          ? j
+          : (() => {
+              const next: Job = { ...j, ...updates };
+              if (next.payType === 'hourly') {
+                next.daysPerWeek = Math.min(7, Math.max(1, next.daysPerWeek ?? 5));
+                next.daysPerMonth = undefined;
+              } else {
+                next.daysPerMonth = Math.min(
+                  31,
+                  Math.max(
+                    1,
+                    next.daysPerMonth ??
+                      (j.daysPerWeek && j.daysPerWeek > 0
+                        ? Math.round(j.daysPerWeek * AVG_WEEKS_PER_MONTH)
+                        : settings.workingDaysPerMonth || 22)
+                  )
+                );
+                next.daysPerWeek = undefined;
+              }
+              return next;
+            })()
+      ),
+    });
+  }
+
+  function removeJob(jobId: string) {
+    setSettings({
+      ...settings,
+      jobs: (settings.jobs ?? []).filter((j) => j.id !== jobId),
+    });
+  }
+
   function updateSettings(updates: Partial<AppSettings>) {
     setSettings({ ...settings, ...updates });
   }
@@ -296,6 +383,9 @@ export function useAppData(userId: string) {
     addTravelTrip,
     updateTravelTrip,
     setTravelTripFinished,
+    addJob,
+    updateJob,
+    removeJob,
     updateSettings,
   };
 }

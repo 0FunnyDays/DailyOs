@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+
 /* Import global design tokens */
 @import "./styles/colors.css";
 
@@ -23,11 +25,16 @@ body,
 body {
   margin: 0;
   padding: 0;
-  background: var(--clr-bg);
+  background:
+    radial-gradient(circle at 12% 14%, rgba(168, 85, 247, 0.18), transparent 42%),
+    radial-gradient(circle at 88% 10%, rgba(236, 72, 153, 0.14), transparent 38%),
+    radial-gradient(circle at 78% 78%, rgba(99, 102, 241, 0.10), transparent 44%),
+    linear-gradient(180deg, #100e18 0%, #0c0b13 56%, #08070e 100%);
   color: var(--clr-text);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Manrope", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   transition: background var(--transition-base), color var(--transition-base);
   overflow: hidden;
@@ -141,4 +148,41 @@ img,
 video {
   max-width: 100%;
   height: auto;
+}
+
+/* ============================================================
+   MOBILE ADJUSTMENTS
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .app-content {
+    padding: 8px 10px 0;
+  }
+
+  .app-topbar {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-content {
+    padding: 6px 6px 0;
+  }
+}
+
+/* ============================================================
+   SELECTION & SCROLLBAR
+   ============================================================ */
+
+::selection {
+  background: color-mix(in srgb, var(--clr-accent) 30%, transparent);
+  color: var(--clr-text);
+}
+
+/* Thin scrollbar for browsers that support it */
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--clr-text-dim) 30%, transparent) transparent;
+  }
 }

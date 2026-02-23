@@ -81,35 +81,23 @@ function formatSleepHoursOption(hours: number): string {
 
 function getSleepQualityLabel(level: DayData["sleepQuality"]): string {
   switch (level) {
-    case 1:
-      return "Poor";
-    case 2:
-      return "Low";
-    case 3:
-      return "Okay";
-    case 4:
-      return "Good";
-    case 5:
-      return "Great";
-    default:
-      return "Not set";
+    case 1: return "Poor";
+    case 2: return "Low";
+    case 3: return "Okay";
+    case 4: return "Good";
+    case 5: return "Great";
+    default: return "Not set";
   }
 }
 
 function getEnergyLabel(level: DayData["energyLevel"]): string {
   switch (level) {
-    case 1:
-      return "Drained";
-    case 2:
-      return "Low";
-    case 3:
-      return "Stable";
-    case 4:
-      return "Good";
-    case 5:
-      return "High";
-    default:
-      return "Not set";
+    case 1: return "Drained";
+    case 2: return "Low";
+    case 3: return "Stable";
+    case 4: return "Good";
+    case 5: return "High";
+    default: return "Not set";
   }
 }
 
@@ -138,6 +126,22 @@ function computeGymLast7(gymSessions: Record<string, GymSession>, currentDate: s
 
 function hasText(value: string | undefined | null): boolean {
   return Boolean(value && value.trim());
+}
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function formatDisplayDate(dateKey: string): string {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 }
 
 export function HomePage({
@@ -219,6 +223,7 @@ export function HomePage({
         currentDay.shifts.length > 0
           ? `${currentDay.shifts.length} shift${currentDay.shifts.length === 1 ? "" : "s"}`
           : "No shifts yet",
+      color: "blue" as const,
     },
     {
       key: "money",
@@ -227,6 +232,7 @@ export function HomePage({
       value: formatMoney(settings.currency, totals.netEarnings, true),
       hint: "Net today",
       accent: totals.netEarnings > 0,
+      color: "green" as const,
     },
     {
       key: "gym",
@@ -238,6 +244,7 @@ export function HomePage({
         : gymProgram && gymProgram.days.length > 0
           ? `${gymProgram.daysPerWeek || gymProgram.days.length} day program`
           : "No program",
+      color: "purple" as const,
     },
     {
       key: "mood",
@@ -245,26 +252,19 @@ export function HomePage({
       label: "Mood",
       value: mood ? `${mood.emoji} ${mood.label}` : "—",
       hint: mood ? "Set for today" : "Set it tonight",
+      color: "accent" as const,
     },
   ];
 
   const habitChecks = [
-    {
-      label: "Focus",
-      done: hasDailyFocus,
-    },
-    {
-      label: "Recovery",
-      done: hasRecoveryData,
-    },
+    { label: "Focus", done: hasDailyFocus },
+    { label: "Recovery", done: hasRecoveryData },
     { label: "Work", done: currentDay.shifts.length > 0 },
     { label: "Money", done: currentDay.shifts.length > 0 || currentDay.expenses.length > 0 },
     { label: "Gym", done: Boolean(currentGymSession) },
     {
       label: "Reflect",
-      done: Boolean(
-        hasText(currentDay.reflectionLine) || hasText(currentDay.winOfDay),
-      ),
+      done: Boolean(hasText(currentDay.reflectionLine) || hasText(currentDay.winOfDay)),
     },
   ];
   const habitsDone = habitChecks.filter((h) => h.done).length;
@@ -275,7 +275,7 @@ export function HomePage({
   const gymLast7 = computeGymLast7(gymSessions, currentDay.date);
   const streakLabel = gymStreak === 1 ? "1 day" : `${gymStreak} days`;
 
-  const ringRadius = 26;
+  const ringRadius = 18;
   const ringCirc = 2 * Math.PI * ringRadius;
   const ringOffset = ringCirc * (1 - habitsProgress);
 
@@ -314,237 +314,203 @@ export function HomePage({
 
   return (
     <div className="home">
-      <section className="home__section" id="home-daily-focus">
-        <div className="home__section-head">
-          <h2 className="home__section-title">Daily Focus / Priorities</h2>
-          <span className="home__section-kicker">
-            {hasDailyFocus ? "Set" : "Set the day"}
-          </span>
+      {/* ── Hero ─────────────────────────────────────────────── */}
+      <section className="home__hero">
+        <div className="home__hero-text">
+          <h1 className="home__hero-greeting">{getGreeting()}</h1>
+          <span className="home__hero-date">{formatDisplayDate(currentDay.date)}</span>
         </div>
-
-        <div className="home__panel home__focus-panel">
-          <div className="home__panel-head">
-            <span className="home__panel-title">Today&apos;s Focus</span>
-            <span className="home__panel-badge">
-              {filledPriorities.length}/3 priorities
-            </span>
-          </div>
-
-          {!hasDailyFocus ? (
-            <>
-              <p className="home__panel-subtle">
-                You haven&apos;t set priorities for today yet.
-              </p>
-              <div className="home__focus-actions">
-                <button
-                  type="button"
-                  className="home__ghost-btn"
-                  onClick={() => onNavigate("priorities")}
-                >
-                  Open Priorities
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              {(hasFocusTask || hasMustDo) && (
-                <div className="home__focus-summary-grid">
-                  {hasFocusTask && (
-                    <div className="home__focus-summary-card">
-                      <span className="home__focus-summary-label">Main task</span>
-                      <strong className="home__focus-summary-value">{focusTask}</strong>
-                    </div>
-                  )}
-
-                  {hasMustDo && (
-                    <div className="home__focus-summary-card home__focus-summary-card--mustdo">
-                      <span className="home__focus-summary-label">If nothing else, do this</span>
-                      <strong className="home__focus-summary-value">{mustDo}</strong>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {filledPriorities.length > 0 ? (
-                <div className="home__field">
-                  <span className="home__field-label">Top priorities</span>
-                  <div className="home__priority-list">
-                    {filledPriorities.map(({ value, index }) => (
-                      <div key={index} className="home__priority-row home__priority-row--readonly">
-                        <span className="home__priority-index" aria-hidden="true">
-                          {index + 1}
-                        </span>
-                        <div className="home__priority-text">{value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <p className="home__panel-subtle">No top priorities added yet.</p>
-              )}
-
-              <div className="home__focus-actions">
-                <button
-                  type="button"
-                  className="home__ghost-btn"
-                  onClick={() => onNavigate("priorities")}
-                >
-                  Open Priorities
-                </button>
-                <button
-                  type="button"
-                  className="home__ghost-btn"
-                  onClick={() => onNavigate("today")}
-                >
-                  Open Work
-                </button>
-              </div>
-            </>
-          )}
+        <div className="home__hero-progress" aria-label={`Habits: ${habitsDone} of ${habitsTotal} done`}>
+          <svg className="home__hero-ring" viewBox="0 0 48 48" aria-hidden="true">
+            <circle className="home__ring-track" cx="24" cy="24" r={ringRadius} />
+            <circle
+              className="home__ring-progress"
+              cx="24"
+              cy="24"
+              r={ringRadius}
+              strokeDasharray={ringCirc}
+              strokeDashoffset={ringOffset}
+            />
+          </svg>
+          <span className="home__hero-progress-label">
+            <strong>{habitsDone}/{habitsTotal}</strong>
+            <span>done</span>
+          </span>
         </div>
       </section>
 
-
-      <section className="home__section" id="home-recovery">
-        <div className="home__section-head">
-          <h2 className="home__section-title">Energy / Recovery</h2>
-          <span className="home__section-kicker">
-            {hasRecoveryData ? "Tracked" : "Quick check-in"}
-          </span>
-        </div>
-
-        <div className="home__panel home__recovery-panel">
-          <div className="home__panel-head">
-            <span className="home__panel-title">Recovery status</span>
-            <span className="home__panel-badge">
-              {typeof currentDay.energyLevel === "number"
-                ? `${currentDay.energyLevel}/5 energy`
-                : hasRecoveryData
-                  ? "Tracked"
-                  : "Not set"}
-            </span>
-          </div>
-
-          {!hasRecoveryData ? (
-            <>
-              <p className="home__panel-subtle">
-                You haven&apos;t added sleep / recovery data for today yet.
-              </p>
-              <div className="home__focus-actions">
-                <button
-                  type="button"
-                  className="home__ghost-btn"
-                  onClick={() => onNavigate("sleep")}
-                >
-                  Open Sleep
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="home__recovery-stats">
-                {recoveryCards.map((card) => (
-                  <div key={card.key} className="home__recovery-stat">
-                    <span className="home__recovery-stat-label">{card.label}</span>
-                    <strong
-                      className={`home__recovery-stat-value${
-                        card.note ? " home__recovery-stat-value--note" : ""
-                      }`}
-                    >
-                      {card.value}
-                    </strong>
-                  </div>
-                ))}
-              </div>
-
-              <div className="home__focus-actions">
-                <button
-                  type="button"
-                  className="home__ghost-btn"
-                  onClick={() => onNavigate("sleep")}
-                >
-                  Open Sleep
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-      <section className="home__section">
-        <div className="home__section-head">
-          <h2 className="home__section-title">Daily Snapshot</h2>
-          <span className="home__section-kicker">
-            {formatHours(workHours)} tracked
-          </span>
-        </div>
-        <div className="home__snapshot">
-          {snapshotItems.map((item) => (
-            <div
-              key={item.key}
-              className={`home__snapshot-item${item.accent ? " home__snapshot-item--accent" : ""}`}
-            >
-              <div className="home__snapshot-top">
-                <span className="home__snapshot-emoji" aria-hidden="true">
-                  {item.emoji}
-                </span>
-                <span className="home__snapshot-label">{item.label}</span>
-              </div>
-              <div className="home__snapshot-value">{item.value}</div>
-              <div className="home__snapshot-hint">{item.hint}</div>
-              {item.key === "work" && (
-                <div className="home__mini-bar" aria-hidden="true">
-                  <span
-                    className="home__mini-bar-fill"
-                    style={{ width: `${Math.round(workProgress * 100)}%` }}
-                  />
-                </div>
-              )}
+      {/* ── Snapshot strip ───────────────────────────────────── */}
+      <section className="home__snapshot">
+        {snapshotItems.map((item) => (
+          <div
+            key={item.key}
+            className={`home__snapshot-item home__snapshot-item--${item.color}${item.accent ? " home__snapshot-item--accent" : ""}`}
+          >
+            <div className="home__snapshot-top">
+              <span className="home__snapshot-emoji" aria-hidden="true">
+                {item.emoji}
+              </span>
+              <span className="home__snapshot-label">{item.label}</span>
             </div>
-          ))}
-        </div>
+            <div className="home__snapshot-value">{item.value}</div>
+            <div className="home__snapshot-hint">{item.hint}</div>
+            {item.key === "work" && (
+              <div className="home__mini-bar" aria-hidden="true">
+                <span
+                  className="home__mini-bar-fill"
+                  style={{ width: `${Math.round(workProgress * 100)}%` }}
+                />
+              </div>
+            )}
+          </div>
+        ))}
       </section>
 
-      <section className="home__section">
-        <div className="home__section-head">
-          <h2 className="home__section-title">Habits / Streaks</h2>
-          <span className="home__section-kicker">Motivation</span>
-        </div>
-        <div className="home__motivation-grid">
-          <div className="home__panel">
+      {/* ── Two-column grid ──────────────────────────────────── */}
+      <div className="home__grid">
+        {/* Left: Focus + Next Step */}
+        <div className="home__grid-main">
+          <section className="home__panel home__focus-panel">
             <div className="home__panel-head">
-              <span className="home__panel-title">🔥 Gym streak</span>
-              <span className="home__panel-badge">{streakLabel}</span>
-            </div>
-            <p className="home__panel-value">{gymStreak > 0 ? streakLabel : "No streak yet"}</p>
-            <p className="home__panel-subtle">
-              {gymLast7}/7 days logged in the last week
-            </p>
-          </div>
-
-          <div className="home__panel home__panel--ring">
-            <div className="home__panel-head">
-              <span className="home__panel-title">✅ Habits done</span>
+              <span className="home__panel-title">Daily Focus</span>
               <span className="home__panel-badge">
-                {habitsDone}/{habitsTotal}
+                {filledPriorities.length}/3 priorities
               </span>
             </div>
 
-            <div className="home__ring-wrap" aria-label={`Habits progress ${Math.round(habitsProgress * 100)} percent`}>
-              <svg className="home__ring" viewBox="0 0 64 64" aria-hidden="true">
-                <circle className="home__ring-track" cx="32" cy="32" r={ringRadius} />
-                <circle
-                  className="home__ring-progress"
-                  cx="32"
-                  cy="32"
-                  r={ringRadius}
-                  strokeDasharray={ringCirc}
-                  strokeDashoffset={ringOffset}
-                />
-              </svg>
-              <div className="home__ring-center">
-                <strong>{Math.round(habitsProgress * 100)}%</strong>
-                <span>today</span>
-              </div>
+            {!hasDailyFocus ? (
+              <>
+                <p className="home__panel-subtle">
+                  You haven&apos;t set priorities for today yet.
+                </p>
+                <div className="home__focus-actions">
+                  <button
+                    type="button"
+                    className="home__ghost-btn"
+                    onClick={() => onNavigate("priorities")}
+                  >
+                    Open Priorities
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                {(hasFocusTask || hasMustDo) && (
+                  <div className="home__focus-summary-grid">
+                    {hasFocusTask && (
+                      <div className="home__focus-summary-card">
+                        <span className="home__focus-summary-label">Main task</span>
+                        <strong className="home__focus-summary-value">{focusTask}</strong>
+                      </div>
+                    )}
+                    {hasMustDo && (
+                      <div className="home__focus-summary-card home__focus-summary-card--mustdo">
+                        <span className="home__focus-summary-label">If nothing else, do this</span>
+                        <strong className="home__focus-summary-value">{mustDo}</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {filledPriorities.length > 0 ? (
+                  <div className="home__field">
+                    <span className="home__field-label">Top priorities</span>
+                    <div className="home__priority-list">
+                      {filledPriorities.map(({ value, index }) => (
+                        <div key={index} className="home__priority-row home__priority-row--readonly">
+                          <span className="home__priority-index" aria-hidden="true">
+                            {index + 1}
+                          </span>
+                          <div className="home__priority-text">{value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="home__panel-subtle">No top priorities added yet.</p>
+                )}
+
+                <div className="home__focus-actions">
+                  <button
+                    type="button"
+                    className="home__ghost-btn"
+                    onClick={() => onNavigate("priorities")}
+                  >
+                    Edit Priorities
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
+
+          <div className="home__next-step">
+            <div className="home__next-step-label">Next step</div>
+            <div className="home__next-step-title">{nextAction.title}</div>
+            <p className="home__next-step-desc">{nextAction.desc}</p>
+            <button type="button" className="home__next-step-btn" onClick={nextAction.onClick}>
+              {nextAction.cta}
+            </button>
+          </div>
+        </div>
+
+        {/* Right: Recovery + Habits */}
+        <div className="home__grid-side">
+          <section className="home__panel home__recovery-panel">
+            <div className="home__panel-head">
+              <span className="home__panel-title">Recovery</span>
+              <span className="home__panel-badge">
+                {typeof currentDay.energyLevel === "number"
+                  ? `${currentDay.energyLevel}/5 energy`
+                  : hasRecoveryData
+                    ? "Tracked"
+                    : "Not set"}
+              </span>
+            </div>
+
+            {!hasRecoveryData ? (
+              <>
+                <p className="home__panel-subtle">
+                  No sleep / recovery data yet.
+                </p>
+                <button
+                  type="button"
+                  className="home__ghost-btn"
+                  onClick={() => onNavigate("sleep")}
+                >
+                  Open Sleep
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="home__recovery-stats">
+                  {recoveryCards.map((card) => (
+                    <div key={card.key} className="home__recovery-stat">
+                      <span className="home__recovery-stat-label">{card.label}</span>
+                      <strong
+                        className={`home__recovery-stat-value${
+                          card.note ? " home__recovery-stat-value--note" : ""
+                        }`}
+                      >
+                        {card.value}
+                      </strong>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="home__ghost-btn"
+                  onClick={() => onNavigate("sleep")}
+                >
+                  Open Sleep
+                </button>
+              </>
+            )}
+          </section>
+
+          <section className="home__panel">
+            <div className="home__panel-head">
+              <span className="home__panel-title">Habits & Streaks</span>
+              <span className="home__panel-badge">{gymStreak > 0 ? `${streakLabel} streak` : "No streak"}</span>
             </div>
 
             <div className="home__chip-list">
@@ -553,30 +519,18 @@ export function HomePage({
                   key={habit.label}
                   className={`home__chip${habit.done ? " home__chip--done" : ""}`}
                 >
-                  {habit.label}
+                  {habit.done ? "✓ " : ""}{habit.label}
                 </span>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="home__section">
-        <div className="home__section-head">
-          <h2 className="home__section-title">Projects — Next Step</h2>
-          <span className="home__section-kicker">Momentum</span>
+            <p className="home__panel-subtle">
+              {gymLast7}/7 gym days this week
+              {gymStreak > 0 && <> · {streakLabel} streak</>}
+            </p>
+          </section>
         </div>
-        <div className="home__next-step">
-          <div className="home__next-step-label">Active Project</div>
-          <div className="home__next-step-title">{nextAction.title}</div>
-          <p className="home__next-step-desc">{nextAction.desc}</p>
-          <button type="button" className="home__next-step-btn" onClick={nextAction.onClick}>
-            {nextAction.cta}
-          </button>
-        </div>
-      </section>
-
-
+      </div>
     </div>
   );
 }

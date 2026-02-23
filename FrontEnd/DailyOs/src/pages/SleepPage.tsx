@@ -6,9 +6,9 @@ type SleepMetaUpdates = Partial<
 >;
 
 type SleepPageProps = {
-  day: DayData;
+  currentDate: string;
   days: Record<string, DayData>;
-  onUpdateDayMeta: (updates: SleepMetaUpdates) => void;
+  onUpdateDayMeta: (date: string, updates: SleepMetaUpdates) => void;
   onNavigate: (page: Page) => void;
 };
 
@@ -123,14 +123,24 @@ function getEnergyLabel(level: DayData["energyLevel"]): string {
   }
 }
 
-export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageProps) {
+export function SleepPage({ currentDate, days, onUpdateDayMeta, onNavigate }: SleepPageProps) {
+  const [selectedDate, setSelectedDate] = useState(currentDate);
+
+  const day: DayData = days[selectedDate] ?? {
+    date: selectedDate,
+    shifts: [],
+    expenses: [],
+  };
+
+  const isToday = selectedDate === currentDate;
+
   const [sleepHoursInput, setSleepHoursInput] = useState(
     typeof day.sleepHours === "number" ? String(day.sleepHours) : "",
   );
 
   useEffect(() => {
     setSleepHoursInput(typeof day.sleepHours === "number" ? String(day.sleepHours) : "");
-  }, [day.sleepHours]);
+  }, [day.sleepHours, selectedDate]);
 
   function parseSleepHours(raw: string): number | undefined | null {
     const trimmed = raw.trim();
@@ -167,12 +177,12 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
     }
 
     setSleepHoursInput(formatSleepHoursInput(parsed));
-    onUpdateDayMeta({ sleepHours: parsed });
+    onUpdateDayMeta(selectedDate, { sleepHours: parsed });
   }
 
-  const last7Dates = Array.from({ length: 7 }, (_, index) => addDays(day.date, -(6 - index)));
-  const last14Dates = Array.from({ length: 14 }, (_, index) => addDays(day.date, -(13 - index)));
-  const last30Dates = Array.from({ length: 30 }, (_, index) => addDays(day.date, -(29 - index)));
+  const last7Dates = Array.from({ length: 7 }, (_, index) => addDays(selectedDate, -(6 - index)));
+  const last14Dates = Array.from({ length: 14 }, (_, index) => addDays(selectedDate, -(13 - index)));
+  const last30Dates = Array.from({ length: 30 }, (_, index) => addDays(selectedDate, -(29 - index)));
 
   const last7Days = last7Dates.map((dateKey) => days[dateKey]).filter(Boolean) as DayData[];
   const last30Days = last30Dates.map((dateKey) => days[dateKey]).filter(Boolean) as DayData[];
@@ -195,7 +205,7 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
 
   let recoveryStreak = 0;
   for (let i = 0; i < 60; i += 1) {
-    const dateKey = addDays(day.date, -i);
+    const dateKey = addDays(selectedDate, -i);
     if (!hasRecoveryEntry(days[dateKey])) break;
     recoveryStreak += 1;
   }
@@ -281,22 +291,58 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
     return `You logged recovery on ${logged7}/7 days this week. Keep the streak going for cleaner trends.`;
   })();
   const noteCharCount = (day.recoveryNote ?? "").length;
-  const formattedCurrentDate = formatDisplayDate(day.date);
+  const formattedSelectedDate = formatDisplayDate(selectedDate);
 
   return (
     <section className="page-renderer__section">
       <div className="home__section-head">
         <h1 className="page-renderer__title" style={{ marginBottom: 0 }}>Sleep / Recovery</h1>
-        <span className="home__section-kicker sleep-page__date-pill">{formattedCurrentDate}</span>
       </div>
 
       <p className="page-renderer__subtitle" style={{ marginBottom: 0 }}>
         Log your sleep and recovery in a few taps.
       </p>
 
-      <div className="home__panel home__recovery-panel sleep-page__checkin-panel" style={{ marginTop: 16 }}>
+      {/* Date picker */}
+      <div className="sleep-page__date-picker" style={{ marginTop: 12 }}>
+        <div className="sleep-page__date-nav">
+          <button
+            type="button"
+            className="sleep-page__date-arrow"
+            onClick={() => setSelectedDate(addDays(selectedDate, -1))}
+            aria-label="Previous day"
+          >
+            ‹
+          </button>
+          <span className="sleep-page__date-pill">{formattedSelectedDate}</span>
+          <button
+            type="button"
+            className="sleep-page__date-arrow"
+            onClick={() => {
+              if (!isToday) setSelectedDate(addDays(selectedDate, 1));
+            }}
+            disabled={isToday}
+            aria-label="Next day"
+          >
+            ›
+          </button>
+          {!isToday && (
+            <button
+              type="button"
+              className="sleep-page__today-btn"
+              onClick={() => setSelectedDate(currentDate)}
+            >
+              Today
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="home__panel home__recovery-panel sleep-page__checkin-panel" style={{ marginTop: 8 }}>
         <div className="home__panel-head">
-          <span className="home__panel-title">Today&apos;s recovery check-in</span>
+          <span className="home__panel-title">
+            {isToday ? "Today's" : formatShortDate(selectedDate)} recovery check-in
+          </span>
           <span className="home__panel-badge">
             {typeof day.energyLevel === "number" ? `${day.energyLevel}/5 energy` : "Not set"}
           </span>
@@ -373,7 +419,7 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
                         type="button"
                         className={`home__level-btn sleep-page__level-btn${day.sleepQuality === level ? " home__level-btn--active" : ""}`}
                         onClick={() =>
-                          onUpdateDayMeta({
+                          onUpdateDayMeta(selectedDate, {
                             sleepQuality: day.sleepQuality === level ? undefined : level,
                           })
                         }
@@ -398,7 +444,7 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
                       type="button"
                       className={`home__level-btn sleep-page__level-btn${day.energyLevel === level ? " home__level-btn--active" : ""}`}
                       onClick={() =>
-                        onUpdateDayMeta({
+                        onUpdateDayMeta(selectedDate, {
                           energyLevel: day.energyLevel === level ? undefined : level,
                         })
                       }
@@ -423,7 +469,7 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
                 placeholder="Ex: slept late, low energy after lunch..."
                 value={day.recoveryNote ?? ""}
                 onChange={(e) =>
-                  onUpdateDayMeta({
+                  onUpdateDayMeta(selectedDate, {
                     recoveryNote: e.target.value || undefined,
                   })
                 }
@@ -455,7 +501,7 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
 
           <div className="sleep-page__stats-grid">
             <div className="home__recovery-stat">
-              <span className="home__recovery-stat-label">Today sleep</span>
+              <span className="home__recovery-stat-label">{isToday ? "Today" : formatShortDate(selectedDate)} sleep</span>
               <strong className="home__recovery-stat-value">{formatSleepHours(day.sleepHours)}</strong>
             </div>
             <div className="home__recovery-stat">
@@ -509,7 +555,7 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
             </span>
             <span className="sleep-page__trend-legend-item">
               <span className="sleep-page__trend-legend-dot sleep-page__trend-legend-dot--today" />
-              Today
+              Selected
             </span>
           </div>
 
@@ -535,7 +581,7 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
                   <div className="sleep-page__trend-bar-wrap">
                     <span
                       className={`sleep-page__trend-bar sleep-page__trend-bar--${tone}${
-                        point.dateKey === day.date ? " sleep-page__trend-bar--today" : ""
+                        point.dateKey === selectedDate ? " sleep-page__trend-bar--today" : ""
                       }${!point.logged ? " sleep-page__trend-bar--empty" : ""}`}
                       style={{ height: `${heightPct}%` }}
                       title={`${point.dateKey} | ${typeof point.sleepHours === "number" ? formatSleepHours(point.sleepHours) : "No sleep hours"}${typeof point.energy === "number" ? ` | Energy ${point.energy}/5` : ""}${typeof point.quality === "number" ? ` | Quality ${point.quality}/5` : ""}`}

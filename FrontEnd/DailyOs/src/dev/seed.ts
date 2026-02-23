@@ -588,7 +588,6 @@ export function seedTestUser(): void {
       currency:            '€',
       monthlyFlatSalary:   1100,
       workingDaysPerMonth: 22,
-      theme:               'dark',
     }));
     ensureThreeMonthDaysSeed();
     seedGymSessions();

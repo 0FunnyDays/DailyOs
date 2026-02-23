@@ -132,16 +132,11 @@
 
 .landing-feature:hover {
     transform: translateY(-3px);
-    border-color: var(--clr-border-2);
+    border-color: color-mix(in srgb, var(--clr-accent) 12%, var(--clr-border-2));
     box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.18),
-        0 0 0 1px var(--clr-border);
-}
-
-[data-theme="light"] .landing-feature:hover {
-    box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.06),
-        0 0 0 1px var(--clr-border);
+        0 8px 32px rgba(0, 0, 0, 0.22),
+        0 0 0 1px var(--clr-border),
+        0 0 24px color-mix(in srgb, var(--clr-accent) 6%, transparent);
 }
 
 .landing-feature__icon {
