@@ -11,6 +11,16 @@ type GymPageProps = {
   onNavigate: (page: Page) => void;
 };
 
+const DEFAULT_SETS_PER_EXERCISE = 3;
+
+function buildDefaultSets(): SetEntry[] {
+  return Array.from({ length: DEFAULT_SETS_PER_EXERCISE }, () => ({
+    id: generateId(),
+    reps: 0,
+    weight: 0,
+  }));
+}
+
 function buildFreshSession(date: string, day: GymDayTemplate): GymSession {
   return {
     date,
@@ -21,7 +31,7 @@ function buildFreshSession(date: string, day: GymDayTemplate): GymSession {
       templateId: ex.id,
       name: ex.name,
       type: ex.type,
-      sets: [],
+      sets: buildDefaultSets(),
     })),
     note: '',
   };
@@ -105,14 +115,14 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
 
   if (!gymProgram || gymProgram.days.length === 0) {
     return (
-      <div className="page">
-        <div className="page__header">
+      <div className="page gym-page">
+        <div className="page__header gym-page__header">
           <h1 className="page__title">Gym</h1>
         </div>
-        <div className="page__content">
+        <div className="page__content gym-page__content">
           <div className="gym-empty">
             <p className="gym-empty__message">No program set up yet.</p>
-            <button className="btn btn--primary" onClick={() => onNavigate('settings')}>
+            <button type="button" className="btn btn--primary" onClick={() => onNavigate('settings-gym')}>
               Go to Settings
             </button>
           </div>
@@ -122,18 +132,19 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
   }
 
   return (
-    <div className="page">
-      <div className="page__header">
+    <div className="page gym-page">
+      <div className="page__header gym-page__header">
         <h1 className="page__title">Gym — {currentDate}</h1>
       </div>
 
-      <div className="page__content">
+      <div className="page__content gym-page__content">
 
         {/* Day picker */}
         <div className="gym-day-picker">
           {gymProgram.days.map((day) => (
             <button
               key={day.id}
+              type="button"
               className={`gym-day-btn${selectedDayId === day.id ? ' gym-day-btn--active' : ''}`}
               onClick={() => selectDay(day)}
             >
@@ -155,7 +166,7 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
               <div key={ex.id} className="gym-exercise">
                 <div className="gym-exercise__header">
                   <span className="gym-exercise__name">{ex.name || 'Unnamed exercise'}</span>
-                  <span className="gym-exercise__badge">
+                  <span className={`gym-exercise__badge gym-exercise__badge--${ex.type}`}>
                     {ex.type === 'strength' ? 'Strength' : 'Cardio'}
                   </span>
                 </div>
@@ -186,6 +197,7 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
                       />
                       <span className="gym-set__unit">kg</span>
                       <button
+                        type="button"
                         className="gym-set__remove"
                         onClick={() => removeSet(ex.id, set.id)}
                         title="Remove set"
@@ -197,6 +209,7 @@ export function GymPage({ gymProgram, gymSessions, currentDate, onUpsertSession,
                 </div>
 
                 <button
+                  type="button"
                   className="gym-exercise__add-set"
                   onClick={() => addSet(ex.id)}
                 >

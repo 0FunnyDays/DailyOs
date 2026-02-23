@@ -2,7 +2,7 @@
 @import "./styles/colors.css";
 
 /* ============================================================
-   RESET (no gaps, no surprises)
+   RESET
    ============================================================ */
 
 *,
@@ -25,24 +25,22 @@ body {
   padding: 0;
   background: var(--clr-bg);
   color: var(--clr-text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  transition: background 0.3s ease, color 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  transition: background var(--transition-base), color var(--transition-base);
   overflow: hidden;
-  /* scroll only inside main, not body */
-  background:
-    radial-gradient(circle at 8% 10%, color-mix(in srgb, var(--clr-accent-soft) 65%, transparent) 0%, transparent 42%),
-    radial-gradient(circle at 88% 16%, color-mix(in srgb, var(--clr-yellow-soft) 55%, transparent) 0%, transparent 38%),
-    linear-gradient(180deg, color-mix(in srgb, var(--clr-bg) 94%, white 6%) 0%, var(--clr-bg) 100%);
 }
 
 /* Reusable glass system */
 .glass {
   background: var(--clr-surface);
-  backdrop-filter: blur(var(--glass-blur, 16px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+  backdrop-filter: blur(var(--glass-blur, 20px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
   border: 1px solid var(--clr-border);
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--glass-shadow);
 }
 
 /* Utility */
@@ -55,7 +53,7 @@ body {
 }
 
 /* ============================================================
-   APP LAYOUT (flush-left, no gaps)
+   APP LAYOUT
    ============================================================ */
 
 .app {
@@ -82,7 +80,7 @@ body {
   min-height: 0;
   height: 100%;
   margin: 0;
-  padding: 8px 16px 0;
+  padding: 10px 20px 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -106,8 +104,8 @@ body {
   margin: 0;
   padding: 0;
   overflow: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* old Edge/IE */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   border-radius: 0;
   position: relative;
   z-index: 0;
@@ -122,11 +120,10 @@ body {
   min-height: 0;
   margin: 0;
   padding: 0 2px;
-  /* βάλ’ το 16px αν θες “ανάσα” στο content */
 }
 
 /* ============================================================
-   HARD OVERRIDES (kills Vite template #root max-width/padding)
+   HARD OVERRIDES
    ============================================================ */
 
 #root {
@@ -135,13 +132,11 @@ body {
   padding: 0 !important;
 }
 
-/* extra safety for any wrapper elements */
 main {
   margin: 0;
   padding: 0;
 }
 
-/* Optional: images/videos never overflow */
 img,
 video {
   max-width: 100%;

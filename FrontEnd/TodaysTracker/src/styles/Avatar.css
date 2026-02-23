@@ -39,5 +39,6 @@
     font-weight: 600;
     letter-spacing: 0.02em;
     border: 1px solid var(--clr-border);
+    -webkit-user-select: none;
     user-select: none;
 }

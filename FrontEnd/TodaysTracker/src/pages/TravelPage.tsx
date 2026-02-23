@@ -65,6 +65,7 @@ function computeTripDays(startDate?: string, endDate?: string): number | null {
 }
 
 function sortTrips(trips: TravelTrip[]): TravelTrip[] {
+  // Keep active trips first, then show the most recently scheduled/updated trips on top.
   return [...trips].sort((a, b) => {
     if (a.isFinished !== b.isFinished) return a.isFinished ? 1 : -1;
     const aDate = a.startDate || "";

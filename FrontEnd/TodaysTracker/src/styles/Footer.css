@@ -1,27 +1,22 @@
 /* ============================================================
-   FOOTER — Glass / Momentum style
+   FOOTER
    ============================================================ */
 
 .footer {
     width: 100%;
-    background: color-mix(in srgb, var(--clr-bg) 92%, var(--clr-surface) 8%);
-    border-top: 0;
-    box-shadow: none;
+    background: transparent;
+    border-top: 1px solid var(--clr-border);
     position: relative;
     z-index: 10;
 }
 
 .footer__inner {
-    /* wider, fits modern layouts */
     max-width: 1200px;
     margin: 0 auto;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    padding: 10px 18px 14px;
-
+    padding: 12px 20px 16px;
     gap: 12px;
 }
 
@@ -29,51 +24,44 @@
     font-size: 13px;
     letter-spacing: 0.01em;
     color: var(--clr-text-dim);
-    opacity: 0.9;
 }
 
-/* Links */
 .footer__links {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
 }
 
 .footer__link {
     color: var(--clr-text-muted);
     text-decoration: none;
-
     font-size: 13px;
-    font-weight: 600;
-
-    padding: 6px 8px;
-    border-radius: 12px;
+    font-weight: 500;
+    padding: 6px 10px;
+    border-radius: 8px;
     border: 0;
-    transition: background 0.18s ease, color 0.18s ease, transform 0.12s ease;
+    transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .footer__link:hover {
-    background: color-mix(in srgb, var(--clr-surface-2) 70%, transparent);
-    color: var(--clr-text);
-    transform: translateY(-1px);
+    background: var(--clr-accent-soft);
+    color: var(--clr-accent-txt);
 }
 
-/* Optional: highlight primary link (if you want one to pop) */
 .footer__link--accent {
-    background: color-mix(in srgb, var(--clr-accent-soft) 70%, transparent);
+    background: var(--clr-accent-soft);
     color: var(--clr-accent-txt);
 }
 
 .footer__link--accent:hover {
-    background: color-mix(in srgb, var(--clr-accent-soft) 75%, transparent);
+    background: color-mix(in srgb, var(--clr-accent-soft) 80%, transparent);
 }
 
-/* Responsive */
 @media (max-width: 720px) {
     .footer__inner {
         flex-direction: column;
         align-items: flex-start;
-        padding: 14px 14px;
+        padding: 14px;
     }
 
     .footer__links {

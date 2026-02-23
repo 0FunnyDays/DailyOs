@@ -103,7 +103,7 @@ export type Page =
 
 // ── Gym types ──────────────────────────────────────────────────────────────
 
-export type ProgramType = 'push-pull-legs' | 'bro-split' | 'full-body' | 'cardio' | 'custom';
+export type ProgramType = 'push-pull-legs' | 'bro-split' | 'full-body' | 'cardio' | 'calisthenics' | 'custom';
 
 export type ExerciseTemplate = {
   id: string;

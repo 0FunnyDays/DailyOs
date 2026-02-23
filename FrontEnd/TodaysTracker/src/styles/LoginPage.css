@@ -11,15 +11,14 @@
 .login-page {
     position: fixed;
     inset: 0;
+    z-index: 1;
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    background:
-        radial-gradient(50rem 50rem at 8% 10%, color-mix(in srgb, var(--clr-accent-soft) 70%, transparent) 0%, transparent 62%),
-        radial-gradient(42rem 42rem at 92% 18%, color-mix(in srgb, var(--clr-yellow-soft) 52%, transparent) 0%, transparent 60%),
-        radial-gradient(32rem 32rem at 78% 86%, rgba(86, 122, 255, 0.08) 0%, transparent 70%),
-        linear-gradient(180deg, color-mix(in srgb, var(--clr-bg) 94%, white 6%) 0%, var(--clr-bg) 100%);
+    background: var(--clr-bg);
+    animation: auth-enter 0.64s var(--ease-apple) both;
+    will-change: opacity, transform;
 }
 
 .login-page::-webkit-scrollbar {
@@ -211,7 +210,7 @@
 
 .btn--primary:hover:not([disabled]) {
     background: var(--clr-accent-h);
-    box-shadow: 0 6px 18px rgba(200, 238, 68, 0.2);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--clr-accent) 25%, transparent);
 }
 
 .login-form .btn--primary {

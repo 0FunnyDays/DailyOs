@@ -13,6 +13,7 @@ type SleepPageProps = {
 };
 
 const LEVEL_SCALE = [1, 2, 3, 4, 5] as const;
+const SLEEP_HOUR_QUICK_OPTIONS = [5, 6, 7, 8, 9] as const;
 
 function toDateKeyLocal(date: Date): string {
   const y = date.getFullYear();
@@ -38,6 +39,22 @@ function formatSleepHours(hours: number | undefined): string {
   return Number.isInteger(hours) ? `${hours}h` : `${hours.toFixed(1)}h`;
 }
 
+function formatDisplayDate(dateKey: string): string {
+  return toLocalDate(dateKey).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatShortDate(dateKey: string): string {
+  return toLocalDate(dateKey).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 function avg(values: number[]): number | null {
   if (values.length === 0) return null;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
@@ -52,6 +69,16 @@ function formatAvgHours(value: number | null): string {
 function formatAvgScore(value: number | null): string {
   if (value === null) return "—";
   return `${value.toFixed(1)}/5`;
+}
+
+function isDefinedNumber(value: number | undefined): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isScaleValue(
+  value: DayData["sleepQuality"] | DayData["energyLevel"],
+): value is 1 | 2 | 3 | 4 | 5 {
+  return typeof value === "number";
 }
 
 function hasRecoveryEntry(value: DayData | undefined): boolean {
@@ -152,16 +179,16 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
 
   const last7Sleep = last7Days
     .map((entry) => entry.sleepHours)
-    .filter((value): value is number => typeof value === "number");
+    .filter(isDefinedNumber);
   const last30Sleep = last30Days
     .map((entry) => entry.sleepHours)
-    .filter((value): value is number => typeof value === "number");
+    .filter(isDefinedNumber);
   const last7Quality = last7Days
     .map((entry) => entry.sleepQuality)
-    .filter((value): value is number => typeof value === "number");
+    .filter(isScaleValue);
   const last7Energy = last7Days
     .map((entry) => entry.energyLevel)
-    .filter((value): value is number => typeof value === "number");
+    .filter(isScaleValue);
 
   const logged7 = last7Dates.filter((dateKey) => hasRecoveryEntry(days[dateKey])).length;
   const logged30 = last30Dates.filter((dateKey) => hasRecoveryEntry(days[dateKey])).length;
@@ -208,7 +235,8 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
           && entry.sleepHours >= 7
           && typeof entry.energyLevel === "number",
       )
-      .map((entry) => entry.energyLevel as number),
+      .map((entry) => entry.energyLevel)
+      .filter(isScaleValue),
   );
   const energyOnShortSleep = avg(
     last30Days
@@ -217,7 +245,8 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
           && entry.sleepHours < 7
           && typeof entry.energyLevel === "number",
       )
-      .map((entry) => entry.energyLevel as number),
+      .map((entry) => entry.energyLevel)
+      .filter(isScaleValue),
   );
 
   const recentNotes = last14Dates
@@ -251,19 +280,21 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
 
     return `You logged recovery on ${logged7}/7 days this week. Keep the streak going for cleaner trends.`;
   })();
+  const noteCharCount = (day.recoveryNote ?? "").length;
+  const formattedCurrentDate = formatDisplayDate(day.date);
 
   return (
     <section className="page-renderer__section">
       <div className="home__section-head">
         <h1 className="page-renderer__title" style={{ marginBottom: 0 }}>Sleep / Recovery</h1>
-        <span className="home__section-kicker">{day.date}</span>
+        <span className="home__section-kicker sleep-page__date-pill">{formattedCurrentDate}</span>
       </div>
 
       <p className="page-renderer__subtitle" style={{ marginBottom: 0 }}>
-        Track sleep hours, sleep quality, and energy so Home can show the snapshot.
+        Log your sleep and recovery in a few taps.
       </p>
 
-      <div className="home__panel home__recovery-panel" style={{ marginTop: 16 }}>
+      <div className="home__panel home__recovery-panel sleep-page__checkin-panel" style={{ marginTop: 16 }}>
         <div className="home__panel-head">
           <span className="home__panel-title">Today&apos;s recovery check-in</span>
           <span className="home__panel-badge">
@@ -271,93 +302,141 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
           </span>
         </div>
 
-        <div className="home__recovery-grid">
-          <label className="home__field">
-            <span className="home__field-label">Sleep (hours)</span>
-            <input
-              className="home__field-input"
-              type="text"
-              inputMode="decimal"
-              placeholder="Ex: 7.5 or 7:30"
-              value={sleepHoursInput}
-              onChange={(e) => setSleepHoursInput(e.target.value)}
-              onBlur={(e) => commitSleepHours(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  commitSleepHours(e.currentTarget.value);
-                  e.currentTarget.blur();
-                }
-              }}
-            />
-          </label>
+        <div className="sleep-page__today-summary" aria-label="Current recovery values">
+          <div className="sleep-page__today-pill">
+            <span className="sleep-page__today-pill-label">Sleep</span>
+            <strong className="sleep-page__today-pill-value">{formatSleepHours(day.sleepHours)}</strong>
+          </div>
+          <div className="sleep-page__today-pill">
+            <span className="sleep-page__today-pill-label">Quality</span>
+            <strong className="sleep-page__today-pill-value">{getSleepQualityLabel(day.sleepQuality)}</strong>
+          </div>
+          <div className="sleep-page__today-pill">
+            <span className="sleep-page__today-pill-label">Energy</span>
+            <strong className="sleep-page__today-pill-value">{getEnergyLabel(day.energyLevel)}</strong>
+          </div>
+        </div>
 
-          <div className="home__field">
-            <span className="home__field-label">Sleep quality</span>
-            <div className="home__level-group">
-              <div className="home__level-row" role="group" aria-label="Sleep quality">
-                {LEVEL_SCALE.map((level) => (
-                  <button
-                    key={`sleep-quality-${level}`}
-                    type="button"
-                    className={`home__level-btn${day.sleepQuality === level ? " home__level-btn--active" : ""}`}
-                    onClick={() =>
-                      onUpdateDayMeta({
-                        sleepQuality: day.sleepQuality === level ? undefined : level,
-                      })
+        <div className="sleep-page__checkin-layout">
+          <div className="sleep-page__checkin-left">
+            <div className="home__recovery-grid">
+              <label className="home__field sleep-page__hours-field">
+                <span className="home__field-label">Sleep (hours)</span>
+                <input
+                  className="home__field-input"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Ex: 7.5 or 7:30"
+                  value={sleepHoursInput}
+                  onChange={(e) => setSleepHoursInput(e.target.value)}
+                  onBlur={(e) => commitSleepHours(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      commitSleepHours(e.currentTarget.value);
+                      e.currentTarget.blur();
                     }
-                    aria-pressed={day.sleepQuality === level}
+                  }}
+                />
+                <div className="sleep-page__quick-hours" role="group" aria-label="Quick sleep hour options">
+                  {SLEEP_HOUR_QUICK_OPTIONS.map((hours) => {
+                    const isActive = day.sleepHours === hours;
+                    return (
+                      <button
+                        key={`sleep-hour-${hours}`}
+                        type="button"
+                        className={`sleep-page__quick-hour-btn${isActive ? " sleep-page__quick-hour-btn--active" : ""}`}
+                        onClick={() => commitSleepHours(isActive ? "" : String(hours))}
+                        aria-pressed={isActive ? "true" : "false"}
+                      >
+                        {hours}h
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    className="sleep-page__quick-hour-btn sleep-page__quick-hour-btn--ghost"
+                    onClick={() => commitSleepHours("")}
                   >
-                    {level}
+                    Clear
                   </button>
-                ))}
+                </div>
+              </label>
+
+              <div className="home__field sleep-page__scale-field">
+                <span className="home__field-label">Sleep quality</span>
+                <div className="home__level-group">
+                  <div className="home__level-row sleep-page__level-row" role="group" aria-label="Sleep quality">
+                    {LEVEL_SCALE.map((level) => (
+                      <button
+                        key={`sleep-quality-${level}`}
+                        type="button"
+                        className={`home__level-btn sleep-page__level-btn${day.sleepQuality === level ? " home__level-btn--active" : ""}`}
+                        onClick={() =>
+                          onUpdateDayMeta({
+                            sleepQuality: day.sleepQuality === level ? undefined : level,
+                          })
+                        }
+                        aria-pressed={day.sleepQuality === level ? "true" : "false"}
+                      >
+                        {level}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="home__level-hint">{getSleepQualityLabel(day.sleepQuality)}</span>
+                </div>
               </div>
-              <span className="home__level-hint">{getSleepQualityLabel(day.sleepQuality)}</span>
             </div>
+
+            <div className="home__field sleep-page__scale-field">
+              <span className="home__field-label">Energy level</span>
+              <div className="home__level-group">
+                <div className="home__level-row sleep-page__level-row" role="group" aria-label="Energy level">
+                  {LEVEL_SCALE.map((level) => (
+                    <button
+                      key={`energy-level-${level}`}
+                      type="button"
+                      className={`home__level-btn sleep-page__level-btn${day.energyLevel === level ? " home__level-btn--active" : ""}`}
+                      onClick={() =>
+                        onUpdateDayMeta({
+                          energyLevel: day.energyLevel === level ? undefined : level,
+                        })
+                      }
+                      aria-pressed={day.energyLevel === level ? "true" : "false"}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+                <span className="home__level-hint">{getEnergyLabel(day.energyLevel)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="sleep-page__checkin-right">
+            <label className="home__field sleep-page__note-field">
+              <span className="home__field-label">Recovery note</span>
+              <textarea
+                className="home__field-input sleep-page__note-input"
+                maxLength={140}
+                rows={3}
+                placeholder="Ex: slept late, low energy after lunch..."
+                value={day.recoveryNote ?? ""}
+                onChange={(e) =>
+                  onUpdateDayMeta({
+                    recoveryNote: e.target.value || undefined,
+                  })
+                }
+              />
+              <div className="sleep-page__field-foot">
+                <span className="sleep-page__field-help">Optional note: stress, naps, meal timing, training fatigue.</span>
+                <span className="sleep-page__char-count" aria-live="polite">{noteCharCount}/140</span>
+              </div>
+            </label>
           </div>
         </div>
 
-        <div className="home__field">
-          <span className="home__field-label">Energy level</span>
-          <div className="home__level-group">
-            <div className="home__level-row" role="group" aria-label="Energy level">
-              {LEVEL_SCALE.map((level) => (
-                <button
-                  key={`energy-level-${level}`}
-                  type="button"
-                  className={`home__level-btn${day.energyLevel === level ? " home__level-btn--active" : ""}`}
-                  onClick={() =>
-                    onUpdateDayMeta({
-                      energyLevel: day.energyLevel === level ? undefined : level,
-                    })
-                  }
-                  aria-pressed={day.energyLevel === level}
-                >
-                  {level}
-                </button>
-              ))}
-            </div>
-            <span className="home__level-hint">{getEnergyLabel(day.energyLevel)}</span>
-          </div>
-        </div>
-
-        <label className="home__field">
-          <span className="home__field-label">Recovery note</span>
-          <input
-            className="home__field-input"
-            type="text"
-            maxLength={140}
-            placeholder="Ex: slept late, low energy after lunch..."
-            value={day.recoveryNote ?? ""}
-            onChange={(e) =>
-              onUpdateDayMeta({
-                recoveryNote: e.target.value || undefined,
-              })
-            }
-          />
-        </label>
-
-        <div className="home__focus-actions">
+        <div className="home__focus-actions sleep-page__actions">
           <button type="button" className="home__ghost-btn" onClick={() => onNavigate("home")}>
             Back to Home
           </button>
@@ -370,8 +449,8 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
       <div className="sleep-page__analytics-grid">
         <section className="home__panel sleep-page__analytics-panel">
           <div className="home__panel-head">
-            <span className="home__panel-title">Recovery Analytics</span>
-            <span className="home__panel-badge">{logged7}/7 logged</span>
+            <span className="home__panel-title">Recovery overview</span>
+            <span className="home__panel-badge">Week: {logged7}/7 logged</span>
           </div>
 
           <div className="sleep-page__stats-grid">
@@ -415,6 +494,25 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
             <span className="home__panel-badge">Sleep trend</span>
           </div>
 
+          <div className="sleep-page__trend-legend" aria-hidden="true">
+            <span className="sleep-page__trend-legend-item">
+              <span className="sleep-page__trend-legend-dot sleep-page__trend-legend-dot--low" />
+              Low energy
+            </span>
+            <span className="sleep-page__trend-legend-item">
+              <span className="sleep-page__trend-legend-dot sleep-page__trend-legend-dot--mid" />
+              Medium
+            </span>
+            <span className="sleep-page__trend-legend-item">
+              <span className="sleep-page__trend-legend-dot sleep-page__trend-legend-dot--high" />
+              High energy
+            </span>
+            <span className="sleep-page__trend-legend-item">
+              <span className="sleep-page__trend-legend-dot sleep-page__trend-legend-dot--today" />
+              Today
+            </span>
+          </div>
+
           <div className="sleep-page__trend" role="img" aria-label="Sleep hours trend for the last 14 days">
             {trendPoints.map((point) => {
               const heightPct = point.sleepHours
@@ -440,7 +538,7 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
                         point.dateKey === day.date ? " sleep-page__trend-bar--today" : ""
                       }${!point.logged ? " sleep-page__trend-bar--empty" : ""}`}
                       style={{ height: `${heightPct}%` }}
-                      title={`${point.dateKey} • ${typeof point.sleepHours === "number" ? formatSleepHours(point.sleepHours) : "No sleep hours"}${typeof point.energy === "number" ? ` • Energy ${point.energy}/5` : ""}${typeof point.quality === "number" ? ` • Quality ${point.quality}/5` : ""}`}
+                      title={`${point.dateKey} | ${typeof point.sleepHours === "number" ? formatSleepHours(point.sleepHours) : "No sleep hours"}${typeof point.energy === "number" ? ` | Energy ${point.energy}/5` : ""}${typeof point.quality === "number" ? ` | Quality ${point.quality}/5` : ""}`}
                     />
                   </div>
                   <span className="sleep-page__trend-label">{point.label}</span>
@@ -454,7 +552,7 @@ export function SleepPage({ day, days, onUpdateDayMeta, onNavigate }: SleepPageP
               <span className="home__field-label">Recent recovery notes</span>
               {recentNotes.map((item) => (
                 <div key={item.dateKey} className="sleep-page__note-item">
-                  <span className="sleep-page__note-date">{item.dateKey}</span>
+                  <span className="sleep-page__note-date">{formatShortDate(item.dateKey)}</span>
                   <span className="sleep-page__note-text">{item.note}</span>
                 </div>
               ))}

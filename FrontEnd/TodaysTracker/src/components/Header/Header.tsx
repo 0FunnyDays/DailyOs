@@ -18,12 +18,16 @@ const MAIN_NAV_ITEMS: Array<{ page: Page; label: string }> = [
   { page: "today", label: "Work" },
   { page: "dashboard", label: "Dashboard" },
   { page: "projects", label: "Projects" },
-  { page: "travel", label: "Travel" },
+  // { page: "travel", label: "Travel" },
   { page: "sleep", label: "Sleep" },
   { page: "gym", label: "Gym" },
 ];
 
 const SETTINGS_PAGES: Page[] = ["settings", "settings-work", "settings-gym"];
+const SETTINGS_DROPDOWN_ITEMS: Array<{ page: Page; label: string }> = [
+  { page: "settings-work", label: "Work Settings" },
+  { page: "settings-gym", label: "Gym Settings" },
+];
 
 export function Header({
   currentPage,
@@ -35,11 +39,33 @@ export function Header({
   onLogout,
 }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const settingsMenuRef = useRef<HTMLDivElement>(null);
+  const settingsCloseTimeoutRef = useRef<number | null>(null);
   const isOnSettingsPage = SETTINGS_PAGES.includes(currentPage);
 
+  function clearSettingsCloseTimeout() {
+    if (settingsCloseTimeoutRef.current === null) return;
+    window.clearTimeout(settingsCloseTimeoutRef.current);
+    settingsCloseTimeoutRef.current = null;
+  }
+
+  function openSettingsMenu() {
+    clearSettingsCloseTimeout();
+    setSettingsMenuOpen(true);
+  }
+
+  function closeSettingsMenuSoon() {
+    clearSettingsCloseTimeout();
+    settingsCloseTimeoutRef.current = window.setTimeout(() => {
+      setSettingsMenuOpen(false);
+      settingsCloseTimeoutRef.current = null;
+    }, 180);
+  }
+
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen && !settingsMenuOpen) return;
 
     function onPointerDown(event: PointerEvent) {
       const target = event.target;
@@ -48,14 +74,26 @@ export function Header({
       if (menuOpen && !userMenuRef.current?.contains(target)) {
         setMenuOpen(false);
       }
+      if (settingsMenuOpen && !settingsMenuRef.current?.contains(target)) {
+        clearSettingsCloseTimeout();
+        setSettingsMenuOpen(false);
+      }
     }
 
     window.addEventListener("pointerdown", onPointerDown);
     return () => window.removeEventListener("pointerdown", onPointerDown);
-  }, [menuOpen]);
+  }, [menuOpen, settingsMenuOpen]);
+
+  useEffect(() => {
+    return () => {
+      clearSettingsCloseTimeout();
+    };
+  }, []);
 
   function navigate(page: Page) {
     setMenuOpen(false);
+    clearSettingsCloseTimeout();
+    setSettingsMenuOpen(false);
     onNavigate(page);
   }
 
@@ -88,18 +126,61 @@ export function Header({
         ))}
       </div>
 
-      <div className="header-nav__settings-shell">
+      <div
+        ref={settingsMenuRef}
+        className="header-nav__settings-shell header-nav__settings-dropdown"
+        onMouseEnter={openSettingsMenu}
+        onMouseLeave={closeSettingsMenuSoon}
+      >
         <button
           type="button"
           className={`header-nav__nav-item header-nav__settings-btn${
             isOnSettingsPage ? " header-nav__nav-item--active" : ""
           }`}
-          onClick={() => navigate("settings")}
+          onClick={() => {
+            clearSettingsCloseTimeout();
+            setMenuOpen(false);
+            setSettingsMenuOpen((open) => !open);
+          }}
+          aria-expanded={settingsMenuOpen}
+          aria-haspopup="menu"
           aria-current={isOnSettingsPage ? "page" : undefined}
           title="Settings"
         >
           <span className="header-nav__nav-label">Settings</span>
+          <svg
+            className={`header-nav__settings-chevron${settingsMenuOpen ? " header-nav__settings-chevron--open" : ""}`}
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
         </button>
+
+        {settingsMenuOpen && (
+          <div className="header-nav__settings-menu" role="menu" aria-label="Settings menu">
+            {SETTINGS_DROPDOWN_ITEMS.map((item) => (
+              <button
+                key={item.page}
+                type="button"
+                className={`header-nav__settings-menu-item${
+                  currentPage === item.page ? " header-nav__settings-menu-item--active" : ""
+                }`}
+                onClick={() => navigate(item.page)}
+                role="menuitem"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="header__right header-nav__tools">
@@ -154,7 +235,10 @@ export function Header({
           <button
             type="button"
             className="header__avatar"
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() => {
+              setSettingsMenuOpen(false);
+              setMenuOpen((open) => !open);
+            }}
             title="User menu"
             aria-haspopup="menu"
             aria-expanded={menuOpen}
@@ -175,7 +259,7 @@ export function Header({
               <button
                 type="button"
                 className="user-menu__item"
-                onClick={() => navigate("settings")}
+                onClick={() => navigate("settings-work")}
                 role="menuitem"
               >
                 Settings

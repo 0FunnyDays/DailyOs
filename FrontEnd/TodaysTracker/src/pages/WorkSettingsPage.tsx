@@ -12,13 +12,13 @@ export function WorkSettingsPage({ settings, onUpdateSettings }: WorkSettingsPag
     : 0;
 
   return (
-    <div className="page">
-      <div className="page__header">
+    <div className="page work-settings-page">
+      <div className="page__header work-settings-page__header">
         <h1 className="page__title">Work Settings</h1>
       </div>
 
-      <div className="page__content">
-        <div className="settings-form">
+      <div className="page__content work-settings-page__content">
+        <div className="settings-form work-settings-page__form">
 
           <div className="settings-form__group">
             <label className="settings-form__label" htmlFor="sf-salary">

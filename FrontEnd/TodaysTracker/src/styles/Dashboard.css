@@ -1,20 +1,21 @@
 /* ============================================================
-   DASHBOARD PAGE — Premium Infographic Style
+   DASHBOARD PAGE — Dark gradient stat cards
    ============================================================ */
 @import "./colors.css";
 
 .dashboard {
-    padding: 36px 32px;
-    max-width: 1000px;
-    margin: 0 auto;
+    width: 100%;
+    padding: 32px 28px;
+    max-width: none;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 32px;
-    animation: dash-enter 0.35s ease-out;
+    gap: 28px;
+    animation: dash-enter 0.35s var(--ease-apple);
 }
 
 @keyframes dash-enter {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -24,6 +25,31 @@
     color: var(--clr-text);
     letter-spacing: -0.02em;
     margin: 0;
+}
+
+.dashboard__hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.dashboard__title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    text-align: center;
+}
+
+.dashboard__hero .dashboard__title {
+    text-align: center;
+}
+
+.dashboard__hero .date-picker {
+    width: 100%;
+    align-items: center;
 }
 
 .dashboard__section-title {
@@ -47,6 +73,7 @@
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .date-picker__btn {
@@ -60,14 +87,13 @@
     font-size: 0.8125rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.18s ease;
+    transition: all var(--transition-fast);
 }
 
 .date-picker__btn:hover {
     background: var(--clr-surface-2);
     color: var(--clr-text);
     border-color: var(--clr-border-2);
-    transform: translateY(-1px);
 }
 
 .date-picker__btn--active {
@@ -79,13 +105,28 @@
 }
 
 [data-theme="light"] .date-picker__btn--active {
-    box-shadow: 0 2px 12px rgba(26, 122, 64, 0.2);
+    background: var(--clr-accent);
+    color: #1a1a1e;
+    box-shadow: 0 2px 12px rgba(232, 197, 69, 0.25);
 }
 
 .date-picker__custom {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    gap: 12px;
+    align-items: end;
+    width: min(640px, 100%);
+}
+
+.date-picker__field-group {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.date-picker__input-wrap {
+    position: relative;
 }
 
 .date-picker__label {
@@ -97,15 +138,16 @@
 }
 
 .date-picker__input {
+    width: 100%;
     height: 38px;
-    padding: 0 12px;
+    padding: 0 40px 0 12px;
     background: var(--clr-input);
     border: 1px solid var(--clr-border);
     border-radius: 10px;
     color: var(--clr-text);
     font-size: 0.8125rem;
     outline: none;
-    transition: border-color 0.18s, box-shadow 0.18s;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .date-picker__input:focus {
@@ -113,7 +155,161 @@
     box-shadow: var(--shadow-focus-ring);
 }
 
-/* ── Stat Cards ──────────────────────────────────────────── */
+[data-theme="dark"] .date-picker__input {
+    color-scheme: dark;
+}
+
+[data-theme="light"] .date-picker__input {
+    color-scheme: light;
+}
+
+.date-picker__input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    cursor: pointer;
+}
+
+.date-picker__picker-btn {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--clr-text-dim);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.date-picker__picker-btn:hover {
+    background: var(--clr-surface-2);
+    border-color: var(--clr-border);
+    color: var(--clr-text);
+}
+
+.date-picker__picker-btn:focus-visible {
+    outline: 2px solid var(--clr-focus-outline);
+    outline-offset: 2px;
+}
+
+.date-picker__input-wrap:focus-within .date-picker__picker-btn {
+    color: var(--clr-accent);
+    border-color: color-mix(in srgb, var(--clr-accent) 25%, var(--clr-border));
+}
+
+.date-picker__picker-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.date-picker__range-chip {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 7px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--clr-border);
+    background: color-mix(in srgb, var(--clr-surface) 78%, transparent);
+    color: var(--clr-text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.dashboard__range-chip {
+    margin-top: 2px;
+}
+
+.dashboard__data-filter {
+    width: min(920px, 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.dashboard__data-filter-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--clr-text-dim);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.dashboard__data-filter-chips {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.dashboard__data-filter-btn,
+.dashboard__data-filter-reset {
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--clr-border-2);
+    background: var(--clr-surface);
+    color: var(--clr-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.dashboard__data-filter-btn:hover,
+.dashboard__data-filter-reset:hover {
+    color: var(--clr-text);
+    background: var(--clr-surface-2);
+    border-color: var(--clr-border);
+}
+
+.dashboard__data-filter-btn--active {
+    color: var(--clr-accent-txt);
+    background: color-mix(in srgb, var(--clr-accent) 18%, var(--clr-surface));
+    border-color: color-mix(in srgb, var(--clr-accent) 50%, var(--clr-border));
+    box-shadow: 0 2px 12px rgba(200, 238, 68, 0.14);
+}
+
+.dashboard__data-filter-btn:focus-visible,
+.dashboard__data-filter-reset:focus-visible {
+    outline: 2px solid var(--clr-focus-outline);
+    outline-offset: 2px;
+}
+
+.dashboard__data-filter-reset {
+    font-weight: 700;
+}
+
+.dashboard__data-filter-reset--active {
+    color: var(--clr-text-dim);
+    border-style: dashed;
+}
+
+.dashboard__empty-selection {
+    text-align: center;
+    padding: 18px 16px;
+    border-radius: 14px;
+    border: 1px dashed var(--clr-border);
+    background: color-mix(in srgb, var(--clr-surface) 84%, transparent);
+    color: var(--clr-text-muted);
+    font-size: 0.875rem;
+}
+
+/* ── Stat Cards — gradient background ────────────────────── */
 
 .dashboard__cards {
     display: grid;
@@ -133,12 +329,12 @@
     flex-direction: column;
     gap: 10px;
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
 }
 
 [data-theme="light"] .stat-card:hover {
@@ -182,89 +378,89 @@
     letter-spacing: 0.06em;
 }
 
-/* ── Stat card — Blue variant ────────────────────────────── */
+/* ── Blue variant ────────────────────────────────────────── */
 
 .stat-card--blue {
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.12) 0%, var(--clr-surface) 100%);
-    border: 1px solid rgba(96, 165, 250, 0.15);
+    background: linear-gradient(135deg, rgba(10, 132, 255, 0.14) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(10, 132, 255, 0.12);
 }
 .stat-card--blue::before          { background: var(--clr-blue); }
 .stat-card--blue .stat-card__icon { background: var(--clr-blue-soft); color: var(--clr-blue); }
 
 [data-theme="light"] .stat-card--blue {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, var(--clr-surface) 100%);
-    border-color: rgba(37, 99, 235, 0.12);
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.08) 0%, var(--clr-surface) 100%);
+    border-color: rgba(0, 122, 255, 0.10);
 }
 
-/* ── Stat card — Green variant ───────────────────────────── */
+/* ── Green variant ───────────────────────────────────────── */
 
 .stat-card--green {
-    background: linear-gradient(135deg, rgba(52, 211, 153, 0.12) 0%, var(--clr-surface) 100%);
-    border: 1px solid rgba(52, 211, 153, 0.15);
+    background: linear-gradient(135deg, rgba(48, 209, 88, 0.14) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(48, 209, 88, 0.12);
 }
 .stat-card--green::before          { background: var(--clr-green); }
 .stat-card--green .stat-card__icon { background: var(--clr-green-soft); color: var(--clr-green); }
 
 [data-theme="light"] .stat-card--green {
-    background: linear-gradient(135deg, rgba(26, 122, 64, 0.08) 0%, var(--clr-surface) 100%);
-    border-color: rgba(26, 122, 64, 0.12);
+    background: linear-gradient(135deg, rgba(52, 199, 89, 0.08) 0%, var(--clr-surface) 100%);
+    border-color: rgba(52, 199, 89, 0.10);
 }
 
-/* ── Stat card — Amber variant ───────────────────────────── */
+/* ── Amber variant ───────────────────────────────────────── */
 
 .stat-card--amber {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.10) 0%, var(--clr-surface) 100%);
-    border: 1px solid rgba(251, 191, 36, 0.12);
+    background: linear-gradient(135deg, rgba(255, 214, 10, 0.10) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(255, 214, 10, 0.10);
 }
 .stat-card--amber::before          { background: var(--clr-yellow); }
 .stat-card--amber .stat-card__icon { background: var(--clr-yellow-soft); color: var(--clr-yellow); }
 
 [data-theme="light"] .stat-card--amber {
-    background: linear-gradient(135deg, rgba(180, 83, 9, 0.06) 0%, var(--clr-surface) 100%);
-    border-color: rgba(180, 83, 9, 0.10);
+    background: linear-gradient(135deg, rgba(232, 163, 23, 0.08) 0%, var(--clr-surface) 100%);
+    border-color: rgba(232, 163, 23, 0.10);
 }
 
-/* ── Stat card — Accent variant ──────────────────────────── */
+/* ── Accent variant ──────────────────────────────────────── */
 
 .stat-card--accent {
     background: linear-gradient(135deg, rgba(200, 238, 68, 0.14) 0%, var(--clr-surface) 100%);
-    border: 1px solid rgba(200, 238, 68, 0.18);
+    border: 1px solid rgba(200, 238, 68, 0.14);
 }
 .stat-card--accent::before          { background: var(--clr-accent); }
 .stat-card--accent .stat-card__icon { background: var(--clr-accent-soft); color: var(--clr-accent); }
 .stat-card--accent .stat-card__value { color: var(--clr-accent-txt); }
 
 [data-theme="light"] .stat-card--accent {
-    background: linear-gradient(135deg, rgba(26, 122, 64, 0.10) 0%, var(--clr-surface) 100%);
-    border-color: rgba(26, 122, 64, 0.15);
+    background: linear-gradient(135deg, rgba(232, 197, 69, 0.10) 0%, var(--clr-surface) 100%);
+    border-color: rgba(232, 197, 69, 0.12);
 }
 
-/* ── Stat card — Red variant ─────────────────────────────── */
+/* ── Red variant ─────────────────────────────────────────── */
 
 .stat-card--red {
-    background: linear-gradient(135deg, rgba(248, 113, 113, 0.10) 0%, var(--clr-surface) 100%);
-    border: 1px solid rgba(248, 113, 113, 0.12);
+    background: linear-gradient(135deg, rgba(255, 69, 58, 0.10) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(255, 69, 58, 0.10);
 }
 .stat-card--red::before          { background: var(--clr-red); }
 .stat-card--red .stat-card__icon { background: var(--clr-red-soft); color: var(--clr-red); }
 
 [data-theme="light"] .stat-card--red {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.06) 0%, var(--clr-surface) 100%);
-    border-color: rgba(220, 38, 38, 0.10);
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.06) 0%, var(--clr-surface) 100%);
+    border-color: rgba(255, 59, 48, 0.08);
 }
 
-/* ── Stat card — Purple variant ──────────────────────────── */
+/* ── Purple variant ──────────────────────────────────────── */
 
 .stat-card--purple {
-    background: linear-gradient(135deg, rgba(167, 139, 250, 0.10) 0%, var(--clr-surface) 100%);
-    border: 1px solid rgba(167, 139, 250, 0.12);
+    background: linear-gradient(135deg, rgba(191, 90, 242, 0.10) 0%, var(--clr-surface) 100%);
+    border: 1px solid rgba(191, 90, 242, 0.10);
 }
 .stat-card--purple::before          { background: var(--clr-purple); }
 .stat-card--purple .stat-card__icon { background: var(--clr-purple-soft); color: var(--clr-purple); }
 
 [data-theme="light"] .stat-card--purple {
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.06) 0%, var(--clr-surface) 100%);
-    border-color: rgba(124, 58, 237, 0.10);
+    background: linear-gradient(135deg, rgba(175, 82, 222, 0.06) 0%, var(--clr-surface) 100%);
+    border-color: rgba(175, 82, 222, 0.08);
 }
 
 /* ── Chart card ──────────────────────────────────────────── */
@@ -276,11 +472,7 @@
     border: 1px solid var(--clr-border);
     border-radius: var(--glass-radius);
     padding: 28px 24px 20px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-}
-
-[data-theme="light"] .dashboard__chart-card {
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--glass-shadow);
 }
 
 /* ── Bar Chart ───────────────────────────────────────────── */
@@ -301,7 +493,7 @@
 }
 
 .bar-chart__bar {
-    transition: opacity 0.15s;
+    transition: opacity var(--transition-fast);
 }
 
 .bar-chart__empty {
@@ -321,11 +513,7 @@
     border: 1px solid var(--clr-border);
     border-radius: var(--glass-radius);
     padding: 28px 24px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-}
-
-[data-theme="light"] .dashboard__breakdown-card {
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--glass-shadow);
 }
 
 .breakdown-bar__track {
@@ -410,14 +598,10 @@
     border: 1px solid var(--clr-border);
     border-radius: var(--glass-radius);
     padding: 24px 20px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--glass-shadow);
     display: flex;
     flex-direction: column;
     gap: 8px;
-}
-
-[data-theme="light"] .dashboard__pie-card {
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
 }
 
 .dashboard__pie-card-title {
@@ -485,7 +669,7 @@
     font-size: 0.8125rem;
     color: var(--clr-text-muted);
     cursor: pointer;
-    transition: opacity 0.15s;
+    transition: opacity var(--transition-fast);
 }
 
 .pie-chart__legend-item--active {
@@ -522,7 +706,7 @@
 }
 
 .pie-chart__slice {
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-fast);
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
@@ -543,6 +727,19 @@
         gap: 24px;
     }
 
+    .dashboard__title-row {
+        gap: 8px;
+    }
+
+    .dashboard__data-filter {
+        gap: 6px;
+    }
+
+    .dashboard__data-filter-label {
+        width: 100%;
+        text-align: center;
+    }
+
     .dashboard__cards {
         grid-template-columns: 1fr;
     }
@@ -552,7 +749,7 @@
     }
 
     .date-picker__custom {
-        flex-wrap: wrap;
+        grid-template-columns: 1fr;
     }
 
     .dashboard__pies {

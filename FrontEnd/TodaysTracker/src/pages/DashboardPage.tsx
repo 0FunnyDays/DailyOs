@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useId } from 'react';
+import { useState, useMemo, useCallback, useId, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { DayData, AppSettings, GymSession } from '../types';
 import type { ChartDataPoint } from '../utils/dashboardUtils';
@@ -35,6 +35,9 @@ type BreakdownSegment = {
 };
 
 type StatCardVariant = 'blue' | 'green' | 'amber' | 'red' | 'accent' | 'purple';
+type DashboardDataKey = 'work' | 'gym' | 'sleep';
+
+type DashboardDataVisibility = Record<DashboardDataKey, boolean>;
 
 // ── DateRangePicker ────────────────────────────────────────────────────────
 
@@ -46,14 +49,66 @@ const PRESETS: { key: DateRangePreset; label: string }[] = [
   { key: 'all', label: 'All time' },
 ];
 
-function DateRangePicker({ value, onChange, activePreset, onPresetChange }: {
+const DASHBOARD_DATA_FILTERS: { key: DashboardDataKey; label: string }[] = [
+  { key: 'work', label: 'Work' },
+  { key: 'gym', label: 'Gym' },
+  { key: 'sleep', label: 'Sleep' },
+];
+
+const DEFAULT_DASHBOARD_DATA_VISIBILITY: DashboardDataVisibility = {
+  work: true,
+  gym: true,
+  sleep: true,
+};
+
+function clampDateKey(dateKey: string, minDate: string, maxDate: string): string {
+  if (dateKey < minDate) return minDate;
+  if (dateKey > maxDate) return maxDate;
+  return dateKey;
+}
+
+function clampRange(range: DateRange, minDate: string, maxDate: string): DateRange {
+  let from = clampDateKey(range.from, minDate, maxDate);
+  let to = clampDateKey(range.to, minDate, maxDate);
+  if (from > to) [from, to] = [to, from];
+  return { from, to };
+}
+
+function DateRangePicker({ value, onChange, activePreset, onPresetChange, minDate, maxDate }: {
   value: DateRange;
   onChange: (range: DateRange) => void;
   activePreset: DateRangePreset | null;
   onPresetChange: (preset: DateRangePreset) => void;
+  minDate: string;
+  maxDate: string;
 }) {
   const fromInputId = useId();
   const toInputId = useId();
+  const fromInputRef = useRef<HTMLInputElement>(null);
+  const toInputRef = useRef<HTMLInputElement>(null);
+
+  function handleFromChange(raw: string) {
+    if (!raw) return;
+    const next = clampRange({ from: raw, to: value.to }, minDate, maxDate);
+    onChange(next);
+  }
+
+  function handleToChange(raw: string) {
+    if (!raw) return;
+    const next = clampRange({ from: value.from, to: raw }, minDate, maxDate);
+    onChange(next);
+  }
+
+  function openPicker(ref: { current: HTMLInputElement | null }) {
+    const input = ref.current;
+    if (!input) return;
+    if (typeof input.showPicker === 'function') {
+      input.showPicker();
+      return;
+    }
+    input.focus();
+    input.click();
+  }
 
   return (
     <div className="date-picker">
@@ -70,28 +125,69 @@ function DateRangePicker({ value, onChange, activePreset, onPresetChange }: {
         ))}
       </div>
       <div className="date-picker__custom">
-        <label className="date-picker__label" htmlFor={fromInputId}>From</label>
-        <input
-          id={fromInputId}
-          type="date"
-          className="date-picker__input"
-          value={value.from}
-          max={value.to}
-          onChange={(e) => {
-            onChange({ from: e.target.value, to: value.to });
-          }}
-        />
-        <label className="date-picker__label" htmlFor={toInputId}>To</label>
-        <input
-          id={toInputId}
-          type="date"
-          className="date-picker__input"
-          value={value.to}
-          min={value.from}
-          onChange={(e) => {
-            onChange({ from: value.from, to: e.target.value });
-          }}
-        />
+        <div className="date-picker__field-group">
+          <label className="date-picker__label" htmlFor={fromInputId}>From</label>
+          <div className="date-picker__input-wrap">
+            <input
+              ref={fromInputRef}
+              id={fromInputId}
+              type="date"
+              className="date-picker__input"
+              value={value.from}
+              min={minDate}
+              max={maxDate}
+              onChange={(e) => handleFromChange(e.target.value)}
+            />
+            <button
+              type="button"
+              className="date-picker__picker-btn"
+              onClick={() => openPicker(fromInputRef)}
+              aria-label="Open start date picker"
+              title="Open calendar"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="3" ry="3" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+                <line x1="8" y1="3" x2="8" y2="7" />
+                <line x1="16" y1="3" x2="16" y2="7" />
+                <circle cx="8" cy="14" r="1" />
+                <circle cx="12" cy="14" r="1" />
+                <circle cx="16" cy="14" r="1" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div className="date-picker__field-group">
+          <label className="date-picker__label" htmlFor={toInputId}>To</label>
+          <div className="date-picker__input-wrap">
+            <input
+              ref={toInputRef}
+              id={toInputId}
+              type="date"
+              className="date-picker__input"
+              value={value.to}
+              min={minDate}
+              max={maxDate}
+              onChange={(e) => handleToChange(e.target.value)}
+            />
+            <button
+              type="button"
+              className="date-picker__picker-btn"
+              onClick={() => openPicker(toInputRef)}
+              aria-label="Open end date picker"
+              title="Open calendar"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="3" ry="3" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+                <line x1="8" y1="3" x2="8" y2="7" />
+                <line x1="16" y1="3" x2="16" y2="7" />
+                <path d="M8 15h8" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -498,6 +594,118 @@ function computeGymStats(gymSessions: Record<string, GymSession>, dateKeys: stri
   };
 }
 
+type SleepDashboardStats = {
+  trackedDays: number;
+  notesCount: number;
+  avgSleepHours: number | null;
+  avgQuality: number | null;
+  avgEnergy: number | null;
+  sleep7PlusNights: number;
+  qualityCounts: Record<1 | 2 | 3 | 4 | 5, number>;
+  energyCounts: Record<1 | 2 | 3 | 4 | 5, number>;
+};
+
+function avg(values: number[]): number | null {
+  if (values.length === 0) return null;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function formatSleepHoursStat(value: number | null): string {
+  if (value === null) return '—';
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? `${rounded}h` : `${rounded.toFixed(1)}h`;
+}
+
+function formatScoreStat(value: number | null): string {
+  if (value === null) return '—';
+  return `${value.toFixed(1)}/5`;
+}
+
+function getSleepQualityLabel(level: 1 | 2 | 3 | 4 | 5): string {
+  switch (level) {
+    case 1: return 'Poor';
+    case 2: return 'Low';
+    case 3: return 'Okay';
+    case 4: return 'Good';
+    case 5: return 'Great';
+  }
+}
+
+function getEnergyLabel(level: 1 | 2 | 3 | 4 | 5): string {
+  switch (level) {
+    case 1: return 'Drained';
+    case 2: return 'Low';
+    case 3: return 'Stable';
+    case 4: return 'Good';
+    case 5: return 'High';
+  }
+}
+
+function computeSleepStats(days: Record<string, DayData>, dateKeys: string[]): SleepDashboardStats {
+  const sleepHoursValues: number[] = [];
+  const qualityValues: number[] = [];
+  const energyValues: number[] = [];
+
+  const qualityCounts: Record<1 | 2 | 3 | 4 | 5, number> = {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+  };
+  const energyCounts: Record<1 | 2 | 3 | 4 | 5, number> = {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+  };
+
+  let trackedDays = 0;
+  let notesCount = 0;
+  let sleep7PlusNights = 0;
+
+  for (const key of dateKeys) {
+    const day = days[key];
+    if (!day) continue;
+
+    const hasRecoveryData =
+      typeof day.sleepHours === 'number'
+      || typeof day.sleepQuality === 'number'
+      || typeof day.energyLevel === 'number'
+      || Boolean(day.recoveryNote?.trim());
+
+    if (hasRecoveryData) trackedDays += 1;
+    if (day.recoveryNote?.trim()) notesCount += 1;
+
+    if (typeof day.sleepHours === 'number' && Number.isFinite(day.sleepHours)) {
+      sleepHoursValues.push(day.sleepHours);
+      if (day.sleepHours >= 7) sleep7PlusNights += 1;
+    }
+
+    if (typeof day.sleepQuality === 'number') {
+      qualityValues.push(day.sleepQuality);
+      qualityCounts[day.sleepQuality] += 1;
+    }
+
+    if (typeof day.energyLevel === 'number') {
+      energyValues.push(day.energyLevel);
+      energyCounts[day.energyLevel] += 1;
+    }
+  }
+
+  return {
+    trackedDays,
+    notesCount,
+    avgSleepHours: avg(sleepHoursValues),
+    avgQuality: avg(qualityValues),
+    avgEnergy: avg(energyValues),
+    sleep7PlusNights,
+    qualityCounts,
+    energyCounts,
+  };
+}
+
 function getEarliestDateAll(...records: Record<string, unknown>[]): string {
   const allKeys = records.flatMap((r) => Object.keys(r)).sort();
   return allKeys[0] ?? todayStr();
@@ -559,6 +767,41 @@ const VolumeIcon = (
 
 // ── DashboardPage (main export) ───────────────────────────────────────────
 
+const SleepIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" />
+  </svg>
+);
+
+const QualityIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+const EnergyIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+  </svg>
+);
+
+const SleepLogIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="3" width="16" height="18" rx="2" />
+    <line x1="8" y1="7" x2="16" y2="7" />
+    <line x1="8" y1="11" x2="16" y2="11" />
+    <line x1="8" y1="15" x2="13" y2="15" />
+  </svg>
+);
+
+const NoteIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 3h7v7" />
+    <path d="M10 14 21 3" />
+    <path d="M21 14v7H3V3h7" />
+  </svg>
+);
+
 export function DashboardPage({ days, settings, gymSessions }: DashboardPageProps) {
   const flatDailyPay = settings.workingDaysPerMonth > 0
     ? settings.monthlyFlatSalary / settings.workingDaysPerMonth
@@ -566,6 +809,7 @@ export function DashboardPage({ days, settings, gymSessions }: DashboardPageProp
 
   const [activePreset, setActivePreset] = useState<DateRangePreset | null>('7d');
   const [dateRange, setDateRange] = useState<DateRange>(() => presetToRange('7d', days, gymSessions));
+  const [visibleData, setVisibleData] = useState<DashboardDataVisibility>(DEFAULT_DASHBOARD_DATA_VISIBILITY);
 
   const handlePresetChange = useCallback((preset: DateRangePreset) => {
     setActivePreset(preset);
@@ -577,7 +821,17 @@ export function DashboardPage({ days, settings, gymSessions }: DashboardPageProp
     setDateRange(range);
   }, []);
 
+  const handleToggleData = useCallback((key: DashboardDataKey) => {
+    setVisibleData((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+  const handleShowAllData = useCallback(() => {
+    setVisibleData(DEFAULT_DASHBOARD_DATA_VISIBILITY);
+  }, []);
+
   const cur = settings.currency;
+  const minSelectableDate = useMemo(() => getEarliestDateAll(days, gymSessions), [days, gymSessions]);
+  const maxSelectableDate = todayStr();
 
   const dateKeys = useMemo(() => getDateRangeBetween(dateRange.from, dateRange.to), [dateRange]);
   const stats = useMemo(() => computeStats(days, dateKeys, flatDailyPay), [days, dateKeys, flatDailyPay]);
@@ -585,6 +839,7 @@ export function DashboardPage({ days, settings, gymSessions }: DashboardPageProp
   const chartData = useMemo(() => getChartData(dailyTotals, cur), [dailyTotals, cur]);
 
   const gymStats = useMemo(() => computeGymStats(gymSessions, dateKeys), [gymSessions, dateKeys]);
+  const sleepStats = useMemo(() => computeSleepStats(days, dateKeys), [days, dateKeys]);
 
   const breakdownSegments = useMemo(() => [
     { label: 'Pay', value: stats.totalGross, color: 'var(--clr-green)' },
@@ -613,68 +868,197 @@ export function DashboardPage({ days, settings, gymSessions }: DashboardPageProp
     }));
   }, [gymSessions, dateKeys]);
 
+  const sleepQualityPieSlices = useMemo(() => ([
+    { label: getSleepQualityLabel(1), value: sleepStats.qualityCounts[1], color: '#f87171' },
+    { label: getSleepQualityLabel(2), value: sleepStats.qualityCounts[2], color: '#f59e0b' },
+    { label: getSleepQualityLabel(3), value: sleepStats.qualityCounts[3], color: '#60a5fa' },
+    { label: getSleepQualityLabel(4), value: sleepStats.qualityCounts[4], color: '#34d399' },
+    { label: getSleepQualityLabel(5), value: sleepStats.qualityCounts[5], color: '#a3e635' },
+  ]), [sleepStats]);
+
+  const sleepEnergyPieSlices = useMemo(() => ([
+    { label: getEnergyLabel(1), value: sleepStats.energyCounts[1], color: '#fb7185' },
+    { label: getEnergyLabel(2), value: sleepStats.energyCounts[2], color: '#f59e0b' },
+    { label: getEnergyLabel(3), value: sleepStats.energyCounts[3], color: '#93c5fd' },
+    { label: getEnergyLabel(4), value: sleepStats.energyCounts[4], color: '#22c55e' },
+    { label: getEnergyLabel(5), value: sleepStats.energyCounts[5], color: '#14b8a6' },
+  ]), [sleepStats]);
+  const selectedRangeDays = dateKeys.length;
+  const showWorkData = visibleData.work;
+  const showGymData = visibleData.gym;
+  const showSleepData = visibleData.sleep;
+  const hasVisibleData = showWorkData || showGymData || showSleepData;
+  const allDataVisible = showWorkData && showGymData && showSleepData;
+
   return (
     <div className="dashboard">
-      <h2 className="dashboard__title">Dashboard</h2>
-
-      <DateRangePicker
-        value={dateRange}
-        onChange={handleCustomRange}
-        activePreset={activePreset}
-        onPresetChange={handlePresetChange}
-      />
-
-      {/* Summary cards */}
-      <section>
-        <h3 className="dashboard__section-title">Summary</h3>
-        <div className="dashboard__cards">
-          <StatCard icon={ClockIcon} label="Hours Worked" value={`${stats.totalHours}h`} variant="blue" />
-          <StatCard icon={DollarIcon} label="Gross Pay" value={`${cur}${stats.totalGross.toFixed(2)}`} variant="green" />
-          <StatCard icon={TipsIcon} label="Tips" value={`${cur}${stats.totalTips.toFixed(2)}`} variant="amber" />
-          <StatCard icon={NetIcon} label="Net Earnings" value={`${cur}${stats.netEarnings.toFixed(2)}`} variant="accent" />
-        </div>
-      </section>
-
-      {/* Gym stats */}
-      <section>
-        <h3 className="dashboard__section-title">Gym</h3>
-        <div className="dashboard__cards dashboard__cards--3">
-          <StatCard icon={GymIcon} label="Workouts" value={`${gymStats.workouts}`} variant="purple" />
-          <StatCard icon={SetsIcon} label="Total Sets" value={`${gymStats.totalSets}`} variant="blue" />
-          <StatCard icon={VolumeIcon} label="Volume" value={`${gymStats.totalVolume.toLocaleString()} kg`} variant="red" />
-        </div>
-      </section>
-
-      {/* Earnings chart */}
-      <section>
-        <h3 className="dashboard__section-title">Earnings Over Time</h3>
-        <div className="dashboard__chart-card">
-          <BarChart data={chartData} />
-        </div>
-      </section>
-
-      {/* Breakdown */}
-      <section>
-        <h3 className="dashboard__section-title">Breakdown</h3>
-        <div className="dashboard__breakdown-card">
-          <BreakdownBar segments={breakdownSegments} currency={cur} />
-        </div>
-      </section>
-
-      {/* Pie charts */}
-      <section>
-        <h3 className="dashboard__section-title">Distribution</h3>
-        <div className="dashboard__pies">
-          <div className="dashboard__pie-card">
-            <h4 className="dashboard__pie-card-title">Earnings</h4>
-            <PieChart slices={earningsPieSlices} currency={cur} />
-          </div>
-          <div className="dashboard__pie-card">
-            <h4 className="dashboard__pie-card-title">Gym Split</h4>
-            <PieChart slices={gymSplitSlices} />
+      <div className="dashboard__hero">
+        <div className="dashboard__title-row">
+          <h2 className="dashboard__title">Dashboard</h2>
+          <div className="date-picker__range-chip dashboard__range-chip" aria-live="polite">
+            {selectedRangeDays} day{selectedRangeDays === 1 ? '' : 's'}
           </div>
         </div>
-      </section>
+
+        <DateRangePicker
+          value={dateRange}
+          onChange={handleCustomRange}
+          activePreset={activePreset}
+          onPresetChange={handlePresetChange}
+          minDate={minSelectableDate}
+          maxDate={maxSelectableDate}
+        />
+
+        <div className="dashboard__data-filter" role="group" aria-label="Choose dashboard data to show">
+          <span className="dashboard__data-filter-label">Show</span>
+          <div className="dashboard__data-filter-chips">
+            {DASHBOARD_DATA_FILTERS.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className={`dashboard__data-filter-btn${visibleData[item.key] ? ' dashboard__data-filter-btn--active' : ''}`}
+                onClick={() => handleToggleData(item.key)}
+                aria-pressed={visibleData[item.key] ? "true" : "false"}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className={`dashboard__data-filter-reset${allDataVisible ? ' dashboard__data-filter-reset--active' : ''}`}
+            onClick={handleShowAllData}
+          >
+            Show all
+          </button>
+        </div>
+      </div>
+
+      {!hasVisibleData && (
+        <section>
+          <div className="dashboard__empty-selection">
+            Select at least one data group (`Work`, `Gym`, `Sleep`) to show dashboard cards and charts.
+          </div>
+        </section>
+      )}
+
+      {showWorkData && (
+        <>
+          {/* Summary cards */}
+          <section>
+            <h3 className="dashboard__section-title">Summary</h3>
+            <div className="dashboard__cards">
+              <StatCard icon={ClockIcon} label="Hours Worked" value={`${stats.totalHours}h`} variant="blue" />
+              <StatCard icon={DollarIcon} label="Gross Pay" value={`${cur}${stats.totalGross.toFixed(2)}`} variant="green" />
+              <StatCard icon={TipsIcon} label="Tips" value={`${cur}${stats.totalTips.toFixed(2)}`} variant="amber" />
+              <StatCard icon={NetIcon} label="Net Earnings" value={`${cur}${stats.netEarnings.toFixed(2)}`} variant="accent" />
+            </div>
+          </section>
+
+          {/* Earnings chart */}
+          <section>
+            <h3 className="dashboard__section-title">Earnings Over Time</h3>
+            <div className="dashboard__chart-card">
+              <BarChart data={chartData} />
+            </div>
+          </section>
+
+          {/* Breakdown */}
+          <section>
+            <h3 className="dashboard__section-title">Breakdown</h3>
+            <div className="dashboard__breakdown-card">
+              <BreakdownBar segments={breakdownSegments} currency={cur} />
+            </div>
+          </section>
+        </>
+      )}
+
+      {showGymData && (
+        <section>
+          <h3 className="dashboard__section-title">Gym</h3>
+          <div className="dashboard__cards dashboard__cards--3">
+            <StatCard icon={GymIcon} label="Workouts" value={`${gymStats.workouts}`} variant="purple" />
+            <StatCard icon={SetsIcon} label="Total Sets" value={`${gymStats.totalSets}`} variant="blue" />
+            <StatCard icon={VolumeIcon} label="Volume" value={`${gymStats.totalVolume.toLocaleString()} kg`} variant="red" />
+          </div>
+        </section>
+      )}
+
+      {showSleepData && (
+        <section>
+          <h3 className="dashboard__section-title">Sleep / Recovery</h3>
+          <div className="dashboard__cards dashboard__cards--3">
+            <StatCard
+              icon={SleepIcon}
+              label="Avg Sleep"
+              value={formatSleepHoursStat(sleepStats.avgSleepHours)}
+              variant="blue"
+            />
+            <StatCard
+              icon={QualityIcon}
+              label="Avg Quality"
+              value={formatScoreStat(sleepStats.avgQuality)}
+              variant="purple"
+            />
+            <StatCard
+              icon={EnergyIcon}
+              label="Avg Energy"
+              value={formatScoreStat(sleepStats.avgEnergy)}
+              variant="green"
+            />
+            <StatCard
+              icon={SleepLogIcon}
+              label="Sleep Logs"
+              value={`${sleepStats.trackedDays}/${selectedRangeDays}`}
+              variant="amber"
+            />
+            <StatCard
+              icon={ClockIcon}
+              label="7h+ Nights"
+              value={`${sleepStats.sleep7PlusNights}`}
+              variant="accent"
+            />
+            <StatCard
+              icon={NoteIcon}
+              label="Recovery Notes"
+              value={`${sleepStats.notesCount}`}
+              variant="red"
+            />
+          </div>
+        </section>
+      )}
+
+      {(showWorkData || showGymData || showSleepData) && (
+        <section>
+          <h3 className="dashboard__section-title">Distribution</h3>
+          <div className="dashboard__pies">
+            {showWorkData && (
+              <div className="dashboard__pie-card">
+                <h4 className="dashboard__pie-card-title">Earnings</h4>
+                <PieChart slices={earningsPieSlices} currency={cur} />
+              </div>
+            )}
+            {showGymData && (
+              <div className="dashboard__pie-card">
+                <h4 className="dashboard__pie-card-title">Gym Split</h4>
+                <PieChart slices={gymSplitSlices} />
+              </div>
+            )}
+            {showSleepData && (
+              <div className="dashboard__pie-card">
+                <h4 className="dashboard__pie-card-title">Sleep Quality</h4>
+                <PieChart slices={sleepQualityPieSlices} />
+              </div>
+            )}
+            {showSleepData && (
+              <div className="dashboard__pie-card">
+                <h4 className="dashboard__pie-card-title">Energy Levels</h4>
+                <PieChart slices={sleepEnergyPieSlices} />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

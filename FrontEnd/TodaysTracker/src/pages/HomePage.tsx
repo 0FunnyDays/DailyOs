@@ -146,7 +146,6 @@ export function HomePage({
   gymProgram,
   gymSessions,
   onNavigate,
-  onUpdateDayMeta,
 }: HomePageProps) {
   const flatDailyPay = settings.monthlyFlatSalary / (settings.workingDaysPerMonth || 22);
   const totals = calculateDayTotals(currentDay, flatDailyPay);
@@ -280,10 +279,6 @@ export function HomePage({
   const ringCirc = 2 * Math.PI * ringRadius;
   const ringOffset = ringCirc * (1 - habitsProgress);
 
-  const nowHour = new Date().getHours();
-  const showEndOfDay = nowHour >= 19 || nowHour < settings.dayResetHour || Boolean(currentDay.closedAt);
-  const isClosed = Boolean(currentDay.closedAt);
-
   const nextAction = (() => {
     if (!hasDailyFocus) {
       return {
@@ -307,18 +302,6 @@ export function HomePage({
         desc: "Log today's session or check your training plan.",
         cta: "Open Gym",
         onClick: () => onNavigate("gym" as Page),
-      };
-    }
-    if (showEndOfDay && !isClosed) {
-      return {
-        title: "Close Day",
-        desc: "Capture your win and reflection before you wrap up.",
-        cta: "End of Day",
-        onClick: () =>
-          document.getElementById("home-end-of-day")?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          }),
       };
     }
     return {
@@ -593,83 +576,6 @@ export function HomePage({
         </div>
       </section>
 
-      {showEndOfDay && (
-        <section className="home__section" id="home-end-of-day">
-          <div className="home__section-head">
-            <h2 className="home__section-title">End Of Day</h2>
-            <span className="home__section-kicker">{isClosed ? "Closed" : "Evening mode"}</span>
-          </div>
-
-          <div className="home__panel home__endday">
-            <div className="home__panel-head">
-              <span className="home__panel-title">🌙 Wrap up</span>
-              {isClosed && <span className="home__panel-badge">Closed</span>}
-            </div>
-
-            <label className="home__field">
-              <span className="home__field-label">⭐ Win of the day</span>
-              <input
-                className="home__field-input"
-                type="text"
-                maxLength={120}
-                placeholder="What went well today?"
-                value={currentDay.winOfDay ?? ""}
-                onChange={(e) => onUpdateDayMeta({ winOfDay: e.target.value })}
-              />
-            </label>
-
-            <label className="home__field">
-              <span className="home__field-label">✍️ 1-line reflection</span>
-              <input
-                className="home__field-input"
-                type="text"
-                maxLength={160}
-                placeholder="Short reflection..."
-                value={currentDay.reflectionLine ?? ""}
-                onChange={(e) => onUpdateDayMeta({ reflectionLine: e.target.value })}
-              />
-            </label>
-
-            <div className="home__field">
-              <span className="home__field-label">🧠 Mood</span>
-              <div className="home__mood-row" role="group" aria-label="Select mood">
-                {MOOD_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={`home__mood-btn${currentDay.mood === option.value ? " home__mood-btn--active" : ""}`}
-                    onClick={() => onUpdateDayMeta({ mood: option.value })}
-                    aria-pressed={currentDay.mood === option.value}
-                    title={option.label}
-                  >
-                    <span aria-hidden="true">{option.emoji}</span>
-                    <span>{option.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="home__endday-actions">
-              <button
-                type="button"
-                className="home__next-step-btn"
-                onClick={() =>
-                  onUpdateDayMeta({ closedAt: isClosed ? undefined : new Date().toISOString() })
-                }
-              >
-                {isClosed ? "Reopen Day" : "Close Day"}
-              </button>
-              <button
-                type="button"
-                className="home__ghost-btn"
-                onClick={() => onNavigate("today")}
-              >
-                Open Today
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
 
     </div>
   );

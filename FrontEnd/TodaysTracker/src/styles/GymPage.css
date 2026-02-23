@@ -1,22 +1,454 @@
-.gym-empty__message {
-  margin-bottom: 16px;
+@import "./colors.css";
+
+.gym-page {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: gym-page-enter 0.24s var(--ease-apple);
 }
 
-.gym-empty__hint {
+@keyframes gym-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gym-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 2px 0;
+}
+
+.gym-page .page__title {
+  margin: 0;
+  color: var(--clr-text);
+  font-size: 1.18rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.gym-page__content,
+.gym-page .page__content {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.gym-day-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid var(--clr-border);
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--clr-accent-soft) 18%, transparent) 0%, transparent 55%),
+    color-mix(in srgb, var(--clr-surface) 88%, transparent);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.gym-day-btn {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--clr-border);
+  background: color-mix(in srgb, var(--clr-surface-2) 76%, transparent);
   color: var(--clr-text-muted);
-  font-size: 13px;
-  margin-bottom: 16px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.gym-day-btn:hover {
+  color: var(--clr-text);
+  border-color: var(--clr-border-2);
+  background: color-mix(in srgb, var(--clr-surface-2) 94%, transparent);
+  transform: translateY(-1px);
+}
+
+.gym-day-btn--active,
+.gym-day-btn--active:hover {
+  color: var(--clr-accent-txt);
+  border-color: color-mix(in srgb, var(--clr-accent) 22%, var(--clr-border));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--clr-accent-soft) 90%, transparent) 0%,
+      color-mix(in srgb, var(--clr-surface) 92%, transparent) 100%
+    );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--clr-accent) 8%, transparent);
+  transform: none;
+}
+
+.gym-exercise {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--clr-border);
+  background:
+    radial-gradient(120% 110% at 100% 0%, color-mix(in srgb, var(--clr-accent-soft) 14%, transparent) 0%, transparent 55%),
+    linear-gradient(180deg, color-mix(in srgb, var(--clr-surface-2) 62%, transparent) 0%, color-mix(in srgb, var(--clr-surface) 90%, transparent) 100%);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.gym-exercise__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gym-exercise__name {
+  min-width: 0;
+  color: var(--clr-text);
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.gym-exercise__badge {
+  flex-shrink: 0;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--clr-border);
+  background: color-mix(in srgb, var(--clr-surface-2) 80%, transparent);
+  color: var(--clr-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.gym-exercise__badge--strength {
+  border-color: color-mix(in srgb, var(--clr-accent) 16%, var(--clr-border));
+  background: color-mix(in srgb, var(--clr-accent-soft) 58%, transparent);
+  color: var(--clr-accent-txt);
+}
+
+.gym-exercise__badge--cardio {
+  border-color: color-mix(in srgb, var(--clr-blue) 18%, var(--clr-border));
+  background: color-mix(in srgb, var(--clr-blue-soft) 72%, transparent);
+  color: var(--clr-blue);
+}
+
+.gym-exercise__sets {
+  display: grid;
+  gap: 8px;
+}
+
+.gym-set {
+  display: grid;
+  grid-template-columns: auto minmax(72px, 92px) auto minmax(88px, 110px) auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--clr-border) 92%, transparent);
+  background: color-mix(in srgb, var(--clr-surface-2) 54%, transparent);
+}
+
+.gym-set__unit {
+  color: var(--clr-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .gym-set__unit--index {
+  min-width: 36px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--clr-border-2) 70%, transparent);
+  background: color-mix(in srgb, var(--clr-surface) 78%, transparent);
   color: var(--clr-text-dim);
-  min-width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gym-set__input {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  border: 1px solid var(--clr-border);
+  background: var(--clr-input);
+  color: var(--clr-text);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  appearance: textfield;
+  -moz-appearance: textfield;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.gym-set__input::-webkit-outer-spin-button,
+.gym-set__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.gym-set__input:focus {
+  border-color: var(--clr-focus-border);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.gym-set__remove {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--clr-red) 18%, var(--clr-border));
+  background: color-mix(in srgb, var(--clr-red-soft) 80%, transparent);
+  color: var(--clr-red);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.gym-set__remove:hover {
+  background: var(--clr-red-soft);
+  border-color: color-mix(in srgb, var(--clr-red) 28%, var(--clr-border));
+  transform: translateY(-1px);
+}
+
+.gym-exercise__add-set {
+  justify-self: start;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--clr-accent) 16%, var(--clr-border));
+  background: color-mix(in srgb, var(--clr-accent-soft) 70%, transparent);
+  color: var(--clr-accent-txt);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.gym-exercise__add-set:hover {
+  background: color-mix(in srgb, var(--clr-accent-soft) 92%, transparent);
+  border-color: color-mix(in srgb, var(--clr-accent) 24%, var(--clr-border));
+  transform: translateY(-1px);
 }
 
 .gym-note {
-  margin-top: 16px;
+  margin-top: 2px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--clr-border);
+  background:
+    radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--clr-blue-soft) 22%, transparent) 0%, transparent 60%),
+    color-mix(in srgb, var(--clr-surface) 90%, transparent);
+  box-shadow: var(--glass-shadow);
+}
+
+.gym-note .day-note__textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  padding: 12px 13px;
+  border-radius: 12px;
+  border: 1px solid var(--clr-border);
+  background: var(--clr-input);
+  color: var(--clr-text);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.gym-note .day-note__textarea::placeholder {
+  color: var(--clr-text-dim);
+}
+
+.gym-note .day-note__textarea:focus {
+  border-color: var(--clr-focus-border);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.gym-empty {
+  margin: 0;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px dashed color-mix(in srgb, var(--clr-border-2) 80%, transparent);
+  background: color-mix(in srgb, var(--clr-surface) 70%, transparent);
+  color: var(--clr-text-muted);
+}
+
+div.gym-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gym-empty__message {
+  margin: 0;
+  color: var(--clr-text);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.gym-empty__hint {
+  margin: -2px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px dashed color-mix(in srgb, var(--clr-border-2) 75%, transparent);
+  background: color-mix(in srgb, var(--clr-surface-2) 52%, transparent);
+  color: var(--clr-text-muted);
+  font-size: 0.84rem;
 }
 
 .gym-empty--spaced {
-  padding-top: 32px;
+  padding-top: 22px;
+  padding-bottom: 22px;
+  text-align: center;
+}
+
+.gym-day-btn:focus-visible,
+.gym-exercise__add-set:focus-visible,
+.gym-set__remove:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+@media (max-width: 860px) {
+  .gym-set {
+    grid-template-columns: auto minmax(66px, 1fr) auto minmax(76px, 1fr) auto auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .gym-page {
+    gap: 12px;
+  }
+
+  .gym-exercise {
+    padding: 12px;
+  }
+
+  .gym-exercise__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .gym-set {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-rows: repeat(2, auto);
+    gap: 6px 8px;
+  }
+
+  .gym-set > :nth-child(1) {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  .gym-set > :nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .gym-set > :nth-child(3) {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .gym-set > :nth-child(4) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .gym-set > :nth-child(5) {
+    grid-column: 3;
+    grid-row: 2;
+    align-self: center;
+  }
+
+  .gym-set > :nth-child(6) {
+    grid-column: 4;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .gym-day-picker {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .gym-day-btn {
+    min-height: 36px;
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+    padding-inline: 10px;
+  }
+
+  div.gym-empty {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  div.gym-empty .btn {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gym-page,
+  .gym-day-btn,
+  .gym-set__remove,
+  .gym-exercise__add-set {
+    animation: none !important;
+    transition: none !important;
+  }
 }

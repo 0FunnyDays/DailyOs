@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { Page, Session, User, DayData } from "./types";
 
 import { useAuth } from "./hooks/useAuth";
@@ -19,7 +19,6 @@ import { ProjectsPage } from "./pages/ProjectsPage";
 import { TravelPage } from "./pages/TravelPage";
 import { PrioritiesPage } from "./pages/PrioritiesPage";
 import { SleepPage } from "./pages/SleepPage";
-import { SettingsPage } from "./pages/SettingsPage";
 import { WorkSettingsPage } from "./pages/WorkSettingsPage";
 import { GymSettingsPage } from "./pages/GymSettingsPage";
 import { ProfilePage } from "./pages/ProfilePage";
@@ -51,9 +50,14 @@ function App() {
     updateAvatar,
     updatePassword,
   } = useAuth();
-  const [authEntryScreen, setAuthEntryScreen] = useState<
+  const [authScreen, setAuthScreen] = useState<
     "landing" | "login" | "register"
   >("landing");
+  const [authOutgoingScreen, setAuthOutgoingScreen] = useState<
+    "landing" | "login" | "register" | null
+  >(null);
+  const [isExiting, setIsExiting] = useState(false);
+  const authNavTimeoutRef = useRef<number | null>(null);
 
   // Apply saved theme on mount (covers landing/login pages)
   useEffect(() => {
@@ -62,28 +66,82 @@ function App() {
 
   useEffect(() => {
     if (!session) {
-      setAuthEntryScreen("landing");
+      setAuthScreen("landing");
+      setAuthOutgoingScreen(null);
+      setIsExiting(false);
     }
   }, [session]);
 
-  if (!session) {
-    if (authEntryScreen === "landing") {
-      return (
-        <LandingPage
-          onGetStarted={() => setAuthEntryScreen("register")}
-          onLoginClick={() => setAuthEntryScreen("login")}
-        />
-      );
+  useEffect(() => {
+    return () => {
+      if (authNavTimeoutRef.current !== null) {
+        window.clearTimeout(authNavTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  /** Animate out current page, then switch to the next one */
+  const navigateAuth = useCallback((next: "landing" | "login" | "register") => {
+    if (isExiting || next === authScreen) return;
+
+    if (authNavTimeoutRef.current !== null) {
+      window.clearTimeout(authNavTimeoutRef.current);
+      authNavTimeoutRef.current = null;
     }
 
+    setAuthOutgoingScreen(authScreen);
+    setAuthScreen(next);
+    setIsExiting(true);
+
+    // Keep the outgoing screen mounted long enough to play its exit animation.
+    authNavTimeoutRef.current = window.setTimeout(() => {
+      setAuthOutgoingScreen(null);
+      setIsExiting(false);
+      authNavTimeoutRef.current = null;
+    }, 400); // matches auth-exit duration
+  }, [authScreen, isExiting]);
+
+  const renderAuthScreen = useCallback(
+    (
+      screen: "landing" | "login" | "register",
+      options?: { exiting?: boolean; instanceKey?: string },
+    ) => {
+      if (screen === "landing") {
+        return (
+          <LandingPage
+            key={options?.instanceKey ?? "landing"}
+            onGetStarted={() => navigateAuth("register")}
+            onLoginClick={() => navigateAuth("login")}
+            exiting={options?.exiting}
+          />
+        );
+      }
+
+      return (
+        <LoginPage
+          key={options?.instanceKey ?? screen}
+          initialMode={screen === "register" ? "register" : "login"}
+          onBack={() => navigateAuth("landing")}
+          onRegister={register}
+          onLogin={login}
+          exiting={options?.exiting}
+        />
+      );
+    },
+    [login, navigateAuth, register],
+  );
+
+  if (!session) {
     return (
-      <LoginPage
-        key={authEntryScreen}
-        initialMode={authEntryScreen === "register" ? "register" : "login"}
-        onBack={() => setAuthEntryScreen("landing")}
-        onRegister={register}
-        onLogin={login}
-      />
+      <>
+        {renderAuthScreen(authScreen, { exiting: false, instanceKey: `auth-current-${authScreen}` })}
+        {authOutgoingScreen && authOutgoingScreen !== authScreen
+          ? renderAuthScreen(authOutgoingScreen, {
+              exiting: isExiting,
+              instanceKey: `auth-outgoing-${authOutgoingScreen}`,
+            })
+          : null}
+      </>
     );
   }
 
@@ -270,7 +328,12 @@ function AuthenticatedApp({
                           />
                         );
                       case "settings":
-                        return <SettingsPage onNavigate={navigate} />;
+                        return (
+                          <WorkSettingsPage
+                            settings={settings}
+                            onUpdateSettings={updateSettings}
+                          />
+                        );
                       case "settings-work":
                         return (
                           <WorkSettingsPage

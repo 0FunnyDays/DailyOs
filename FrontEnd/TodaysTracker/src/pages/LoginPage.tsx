@@ -13,6 +13,7 @@ type LoginPageProps = {
   ) => Promise<{ ok: boolean; error?: string }>;
   initialMode?: AuthMode;
   onBack?: () => void;
+  exiting?: boolean;
 };
 
 export function LoginPage({
@@ -20,6 +21,7 @@ export function LoginPage({
   onLogin,
   initialMode = "login",
   onBack,
+  exiting,
 }: LoginPageProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [username, setUsername] = useState("");
@@ -66,7 +68,7 @@ export function LoginPage({
   }
 
   return (
-    <div className="login-page">
+    <div className={`login-page${exiting ? " login-page--exiting" : ""}`}>
       <div className="login-page__stage">
         <div className="login-page__content login-page__content--auth">
           <section className="login-panel" aria-label="Authentication">
