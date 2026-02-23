@@ -3,8 +3,8 @@ import { useLocalStorage } from './useLocalStorage';
 import { sha256Hex } from '../utils/hashUtils';
 import { generateId } from '../utils/idUtils';
 
-const USERS_KEY = 'todaystracker_users';
-const SESSION_KEY = 'todaystracker_session';
+const USERS_KEY = 'dailyos_users';
+const SESSION_KEY = 'dailyos_session';
 
 export function useAuth() {
   const [users, setUsers] = useLocalStorage<User[]>(USERS_KEY, []);

@@ -19,12 +19,6 @@ function formatDuration(hours: number): string {
   return `${h}h ${m}m`;
 }
 
-function isValidTime(value: string): boolean {
-  if (!/^\d{2}:\d{2}$/.test(value)) return false;
-  const [h, m] = value.split(":").map(Number);
-  return h >= 0 && h <= 23 && m >= 0 && m <= 59;
-}
-
 function formatTimeDraft(digits: string): string {
   if (digits.length <= 2) return digits;
   if (digits.length === 3) return `${digits.slice(0, 1)}:${digits.slice(1, 3)}`;

@@ -5,8 +5,8 @@
  */
 
 const TEST_USER_ID = 'seed-user-test-001';
-const USERS_KEY    = 'todaystracker_users';
-const DAYS_KEY     = `todaystracker_days_${TEST_USER_ID}`;
+const USERS_KEY    = 'dailyos_users';
+const DAYS_KEY     = `dailyos_days_${TEST_USER_ID}`;
 
 const SEED_MOODS = ['bad', 'meh', 'good', 'great'] as const;
 const SEED_WINS = [
@@ -422,7 +422,7 @@ function buildRandomGymSessionsSeed(): Record<string, unknown> {
 }
 
 function seedGymSessions(): void {
-  const GYM_KEY = `todaystracker_gym_sessions_${TEST_USER_ID}`;
+  const GYM_KEY = `dailyos_gym_sessions_${TEST_USER_ID}`;
   const existingRaw = localStorage.getItem(GYM_KEY);
   if (existingRaw) {
     try {
@@ -583,7 +583,7 @@ export function seedTestUser(): void {
     }]));
 
     // ── Settings ──────────────────────────────────────────────────────────────
-    localStorage.setItem(`todaystracker_settings_${TEST_USER_ID}`, JSON.stringify({
+    localStorage.setItem(`dailyos_settings_${TEST_USER_ID}`, JSON.stringify({
       dayResetHour:        4,
       currency:            '€',
       monthlyFlatSalary:   1100,
@@ -767,3 +767,4 @@ export function seedTestUser(): void {
     // Silently ignore storage errors
   }
 }
+

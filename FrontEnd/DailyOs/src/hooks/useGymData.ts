@@ -3,11 +3,11 @@ import type { GymProgram, GymSession } from '../types';
 
 export function useGymData(userId: string) {
   const [gymProgram, setGymProgram] = useLocalStorage<GymProgram | null>(
-    `todaystracker_gym_program_${userId}`,
+    `dailyos_gym_program_${userId}`,
     null,
   );
   const [gymSessions, setGymSessions] = useLocalStorage<Record<string, GymSession>>(
-    `todaystracker_gym_sessions_${userId}`,
+    `dailyos_gym_sessions_${userId}`,
     {},
   );
 

@@ -42,19 +42,19 @@ type DayMetaUpdates = Partial<
 
 export function useAppData(userId: string) {
   const [days, setDays] = useLocalStorage<Record<string, DayData>>(
-    `todaystracker_days_${userId}`,
+    `dailyos_days_${userId}`,
     {}
   );
   const [projects, setProjects] = useLocalStorage<Project[]>(
-    `todaystracker_projects_${userId}`,
+    `dailyos_projects_${userId}`,
     []
   );
   const [travelTrips, setTravelTrips] = useLocalStorage<TravelTrip[]>(
-    `todaystracker_travel_${userId}`,
+    `dailyos_travel_${userId}`,
     []
   );
   const [settings, setSettings] = useLocalStorage<AppSettings>(
-    `todaystracker_settings_${userId}`,
+    `dailyos_settings_${userId}`,
     DEFAULT_SETTINGS
   );
 
