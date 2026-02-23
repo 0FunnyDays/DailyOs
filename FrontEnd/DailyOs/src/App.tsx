@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { Page, Session, User, DayData } from "./types";
+import type { Page, Session, User, DayData, AvatarPresetId } from "./types";
 
 import { useAuth } from "./hooks/useAuth";
 import { useAppData } from "./hooks/useAppData";
@@ -53,6 +53,7 @@ function App() {
     login,
     logout,
     updateAvatar,
+    updateAvatarPreset,
     updatePassword,
   } = useAuth();
   const [authScreen, setAuthScreen] = useState<
@@ -151,6 +152,7 @@ function App() {
       users={users}
       onLogout={logout}
       onUpdateAvatar={updateAvatar}
+      onUpdateAvatarPreset={updateAvatarPreset}
       onUpdatePassword={updatePassword}
     />
   );
@@ -162,6 +164,7 @@ type AuthenticatedAppProps = {
   users: User[];
   onLogout: () => void;
   onUpdateAvatar: (userId: string, base64: string) => void;
+  onUpdateAvatarPreset: (userId: string, avatarPresetId: AvatarPresetId) => void;
   onUpdatePassword: (
     userId: string,
     oldPw: string,
@@ -174,6 +177,7 @@ function AuthenticatedApp({
   users,
   onLogout,
   onUpdateAvatar,
+  onUpdateAvatarPreset,
   onUpdatePassword,
 }: AuthenticatedAppProps) {
   const {
@@ -263,6 +267,8 @@ function AuthenticatedApp({
                 onNavigate={navigate}
                 session={session}
                 avatar={currentUser?.avatar ?? null}
+                avatarPresetId={currentUser?.avatarPresetId}
+                gender={currentUser?.gender}
                 onLogout={onLogout}
               />
             </div>
@@ -370,6 +376,7 @@ function AuthenticatedApp({
                           <ProfilePage
                             user={currentUser}
                             onUpdateAvatar={onUpdateAvatar}
+                            onUpdateAvatarPreset={onUpdateAvatarPreset}
                             onUpdatePassword={onUpdatePassword}
                           />
                         ) : null;

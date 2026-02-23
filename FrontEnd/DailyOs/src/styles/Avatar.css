@@ -1,44 +1,75 @@
 /* ============================================================
-   AVATAR
+   Avatar
    ============================================================ */
 
 .avatar {
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
-/* ── Sizes ──────────────────────────────────────────────── */
-
 .avatar--sm {
-    width: 32px;
-    height: 32px;
-    font-size: 0.75rem;
+  width: 32px;
+  height: 32px;
+  font-size: 0.75rem;
 }
 
 .avatar--md {
-    width: 40px;
-    height: 40px;
-    font-size: 0.875rem;
+  width: 40px;
+  height: 40px;
+  font-size: 0.875rem;
 }
 
 .avatar--lg {
-    width: 56px;
-    height: 56px;
-    font-size: 1.125rem;
+  width: 56px;
+  height: 56px;
+  font-size: 1.125rem;
 }
 
-/* ── Initials fallback ──────────────────────────────────── */
+.avatar--preset-image {
+  border: 1px solid var(--clr-border);
+  background: color-mix(in srgb, var(--clr-surface) 86%, transparent);
+}
 
 .avatar--initials {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--clr-accent-soft);
-    color: var(--clr-accent-txt);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    border: 1px solid var(--clr-border);
-    -webkit-user-select: none;
-    user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--clr-accent-soft);
+  color: var(--clr-accent-txt);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--clr-border);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.avatar--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--clr-border);
+  background: color-mix(in srgb, var(--clr-surface) 86%, transparent);
+}
+
+.avatar--icon svg {
+  width: 60%;
+  height: 60%;
+  display: block;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.avatar--male {
+  color: var(--clr-blue);
+  background: color-mix(in srgb, var(--clr-blue-soft) 82%, var(--clr-surface));
+  border-color: color-mix(in srgb, var(--clr-blue) 18%, var(--clr-border));
+}
+
+.avatar--female {
+  color: var(--clr-purple);
+  background: color-mix(in srgb, var(--clr-purple-soft) 82%, var(--clr-surface));
+  border-color: color-mix(in srgb, var(--clr-purple) 18%, var(--clr-border));
 }

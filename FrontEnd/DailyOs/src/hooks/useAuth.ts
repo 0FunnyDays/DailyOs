@@ -1,4 +1,4 @@
-import type { User, Session } from '../types';
+import type { AvatarPresetId, User, Session } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 import { sha256Hex } from '../utils/hashUtils';
 import { generateId } from '../utils/idUtils';
@@ -12,7 +12,8 @@ export function useAuth() {
 
   async function register(
     username: string,
-    password: string
+    password: string,
+    avatarPresetId: AvatarPresetId,
   ): Promise<{ ok: boolean; error?: string }> {
     const trimmed = username.trim();
     if (!trimmed) return { ok: false, error: 'Username is required' };
@@ -26,6 +27,7 @@ export function useAuth() {
       username: trimmed,
       passwordHash: hash,
       avatar: null,
+      avatarPresetId,
       createdAt: new Date().toISOString(),
     };
     setUsers([...users, newUser]);
@@ -53,6 +55,20 @@ export function useAuth() {
     setUsers(users.map((u) => (u.id === userId ? { ...u, avatar: base64 } : u)));
   }
 
+  function updateAvatarPreset(userId: string, avatarPresetId: AvatarPresetId): void {
+    setUsers(
+      users.map((u) =>
+        u.id === userId
+          ? {
+              ...u,
+              avatar: null,
+              avatarPresetId,
+            }
+          : u,
+      ),
+    );
+  }
+
   async function updatePassword(
     userId: string,
     oldPassword: string,
@@ -68,5 +84,14 @@ export function useAuth() {
     return { ok: true };
   }
 
-  return { session, users, register, login, logout, updateAvatar, updatePassword };
+  return {
+    session,
+    users,
+    register,
+    login,
+    logout,
+    updateAvatar,
+    updateAvatarPreset,
+    updatePassword,
+  };
 }

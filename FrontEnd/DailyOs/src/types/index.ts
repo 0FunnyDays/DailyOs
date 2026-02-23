@@ -85,11 +85,27 @@ export type DayTotals = {
   netEarnings: number;
 };
 
+export type Gender = 'male' | 'female';
+export type AvatarPresetId =
+  | 'avatar-1'
+  | 'avatar-2'
+  | 'avatar-3'
+  | 'avatar-4'
+  | 'avatar-5'
+  | 'avatar-6'
+  | 'avatar-7'
+  | 'avatar-8'
+  | 'avatar-9'
+  | 'avatar-10'
+  | 'avatar-11';
+
 export type User = {
   id: string;
   username: string;
   passwordHash: string; // SHA-256 hex
   avatar: string | null; // base64 data URL
+  avatarPresetId?: AvatarPresetId; // chosen preset shown when no uploaded photo exists
+  gender?: Gender; // optional for backward compatibility with existing local users
   createdAt: string;
 };
 

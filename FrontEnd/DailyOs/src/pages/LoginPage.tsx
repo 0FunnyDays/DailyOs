@@ -1,4 +1,6 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import type { AvatarPresetId } from "../types";
+import { AVATAR_PRESET_OPTIONS, Avatar } from "../components/Avatar/Avatar";
 
 type AuthMode = "login" | "register";
 
@@ -6,6 +8,7 @@ type LoginPageProps = {
   onRegister: (
     username: string,
     password: string,
+    avatarPresetId: AvatarPresetId,
   ) => Promise<{ ok: boolean; error?: string }>;
   onLogin: (
     username: string,
@@ -15,6 +18,8 @@ type LoginPageProps = {
   onBack?: () => void;
   exiting?: boolean;
 };
+
+const DEFAULT_AVATAR_PRESET_ID: AvatarPresetId = "avatar-1";
 
 export function LoginPage({
   onRegister,
@@ -27,9 +32,24 @@ export function LoginPage({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [avatarPresetId, setAvatarPresetId] = useState<AvatarPresetId>(DEFAULT_AVATAR_PRESET_ID);
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const usernameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!avatarModalOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setAvatarModalOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [avatarModalOpen]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -44,7 +64,7 @@ export function LoginPage({
     const result =
       mode === "login"
         ? await onLogin(username, password)
-        : await onRegister(username, password);
+        : await onRegister(username, password, avatarPresetId);
     setLoading(false);
 
     if (!result.ok) {
@@ -57,6 +77,8 @@ export function LoginPage({
     setError("");
     setPassword("");
     setConfirmPassword("");
+    setAvatarPresetId(DEFAULT_AVATAR_PRESET_ID);
+    setAvatarModalOpen(false);
     setTimeout(() => usernameInputRef.current?.focus(), 0);
   }
 
@@ -64,6 +86,7 @@ export function LoginPage({
     setError("");
     setPassword("");
     setConfirmPassword("");
+    setAvatarModalOpen(false);
     onBack?.();
   }
 
@@ -138,6 +161,33 @@ export function LoginPage({
                   </label>
                 )}
 
+                {mode === "register" && (
+                  <label className="field">
+                    <span className="field__label">Choose avatar</span>
+                    <div className="auth-avatar-field">
+                      <button
+                        type="button"
+                        className="auth-avatar-field__button"
+                        onClick={() => setAvatarModalOpen(true)}
+                        aria-haspopup="dialog"
+                        aria-expanded={avatarModalOpen}
+                        aria-controls="avatar-picker-dialog"
+                      >
+                        Choose avatar
+                      </button>
+
+                      <span className="auth-avatar-field__preview" aria-hidden="true">
+                        <Avatar
+                          username={username || "You"}
+                          avatar={null}
+                          avatarPresetId={avatarPresetId}
+                          size="lg"
+                        />
+                      </span>
+                    </div>
+                  </label>
+                )}
+
                 {error && <p className="login-error">{error}</p>}
 
                 <button type="submit" className="btn btn--primary" disabled={loading}>
@@ -158,6 +208,71 @@ export function LoginPage({
           </section>
         </div>
       </div>
+
+      {mode === "register" && avatarModalOpen && (
+        <div
+          className="auth-avatar-modal"
+          role="presentation"
+          onClick={() => setAvatarModalOpen(false)}
+        >
+          <div
+            id="avatar-picker-dialog"
+            className="auth-avatar-modal__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="avatar-picker-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="auth-avatar-modal__header">
+              <div>
+                <h3 id="avatar-picker-title" className="auth-avatar-modal__title">
+                  Choose avatar
+                </h3>
+                <p className="auth-avatar-modal__subtitle">
+                  Tap one preview to use it.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="auth-avatar-modal__close"
+                onClick={() => setAvatarModalOpen(false)}
+                aria-label="Close avatar picker"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="auth-avatar-modal__grid" role="list">
+              {AVATAR_PRESET_OPTIONS.map((preset) => {
+                const isSelected = preset.id === avatarPresetId;
+
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    className={`auth-avatar-modal__option${isSelected ? " auth-avatar-modal__option--active" : ""}`}
+                    aria-label={`Choose ${preset.label}`}
+                    aria-pressed={isSelected}
+                    title={preset.label}
+                    onClick={() => {
+                      setAvatarPresetId(preset.id);
+                      setAvatarModalOpen(false);
+                    }}
+                  >
+                    <Avatar
+                      username={username || "You"}
+                      avatar={null}
+                      avatarPresetId={preset.id}
+                      size="lg"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

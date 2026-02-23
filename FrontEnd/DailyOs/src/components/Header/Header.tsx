@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Page, Session } from "../../types";
+import type { AvatarPresetId, Gender, Page, Session } from "../../types";
 import { Avatar } from "../Avatar/Avatar";
 
 type HeaderProps = {
@@ -7,6 +7,8 @@ type HeaderProps = {
   onNavigate: (page: Page) => void;
   session: Session;
   avatar: string | null;
+  avatarPresetId?: AvatarPresetId;
+  gender?: Gender;
   onLogout: () => void;
 };
 
@@ -32,6 +34,8 @@ export function Header({
   onNavigate,
   session,
   avatar,
+  avatarPresetId,
+  gender,
   onLogout,
 }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -192,7 +196,13 @@ export function Header({
             aria-haspopup="menu"
             aria-expanded={menuOpen}
           >
-            <Avatar username={session.username} avatar={avatar} size="sm" />
+            <Avatar
+              username={session.username}
+              avatar={avatar}
+              avatarPresetId={avatarPresetId}
+              gender={gender}
+              size="sm"
+            />
           </button>
 
           {menuOpen && (
